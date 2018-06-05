@@ -3,6 +3,7 @@
 <head>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, user-scalable=no" />
+	<link rel=icon type=image/png href=icono.png sizes=192x192>
 	<style>
 		body {
 			font-family: sans-serif;
@@ -47,6 +48,7 @@
 
 		.mto > div {
 			display: flex;
+			align-items: center;
 			border-top: 1px solid #eee;
 		}
 	
@@ -168,8 +170,8 @@
 			};
 
 			var ultimoDia = null;
-			var $tMax, $tMin, $pr, $vi;
-			var tMax = -999, tMin = 999, pr = 0.0, vi = 0;
+			var $tMax, $tMin, $pr, $vi, $vdir;
+			var tMax = -999, tMin = 999, pr = 0.0, vi = 0, vdir = 0, s = 0;
 			for (var i = 0; i < data.length; i++) {
 				var d = data[i];
 				if (ultimoDia !== d.fech.getDate()) {
@@ -179,12 +181,15 @@
 						$tMin.html(tMin);
 						$pr.html(pr.toFixed(1));
 						$vi.html(vi);
-						tMax = -999, tMin = 999, pr = 0.0, vi = 0;
+						$vdir.attr("style", "transform: rotate(" + ((vdir / s) * 3.6) + "deg);");
+						//console.log($vdir, vdir, s, ((vdir / s) * 3.6));
+						tMax = -999, tMin = 999, pr = 0.0, vi = 0, vdir = 0, s = 0;
 					}
 					$tMax = newSpan("", "mx tc");
 					$tMin = newSpan("", "mn tc");
 					$pr = newSpan("", "mm");
 					$vi = newSpan("", "ws");
+					$vdir = newSpan("", "wd");
 					$mto.append(
 						$("<h4>")
 							.append(newSpan(formateaDate(d.fech)))
@@ -192,6 +197,7 @@
 							.append($tMin)
 							.append($pr)
 							.append($vi)
+							//.append($vdir)
 							.on("click", clickCabecera)
 					);
 				}
@@ -199,28 +205,33 @@
 				tMin = Math.min(tMin, d.temp);
 				pr += d.prec;
 				vi = Math.max(vi, d.vien);
+				vdir += (d.vdir * 0.27);
+				s++;
+				console.log(d.vdir, vdir, s);
 				$mto.append(
 					$("<div>")
 						.append(newSpan(formateaDate(d.fech, "HH")))
-						.append(newSpan("OO"))
 						.append(newSpan(d.temp, "tc"))
 						.append(newSpan(d.nubo, "pc nu"))
 						.append(newSpan(d.prec.toFixed(1), "mm"))
 						.append(newSpan(d.hume, "pc hu"))
 						.append(newSpan(d.pres, "pr"))
 						.append(newSpan(d.vien, "ws"))
-						.append(`<span class="wd" style="transform: rotate(${d.vdir}deg);"></span>`)
+						.append(`<span class="wd" style="transform: rotate(${d.vdir}deg);" data-deg="${d.vdir}"></span>`)
 						.append(newSpan(d.radi, "uv"))
+						.append(newSpan(d.text))
 				);
 				if (i === data.length - 1) {
 					$tMax.html(tMax);
 					$tMin.html(tMin);
 					$pr.html(pr.toFixed(1));
 					$vi.html(vi);
+					$vdir.attr("style", "transform: rotate(" + ((vdir / s) * 3.6) + "deg);");
 				}
 			}
 
 			colorear($mto);
+			$("h4").trigger("click");
 		}
 
 		function pronostico (e, data) {
@@ -305,9 +316,9 @@
 		}
 
 		const Sources = {
-			"openweathermap": "https://api.openweathermap.org/data/2.5/forecast?lat=#&lon=#&lang=es&units=metric&APPID=e3993f2ed6f2dd3b82764b0fc55d3f2c",
 			"wunderground": "https://api.wunderground.com/api/3b0231f0d1ebf323/hourly10day/lang:SP/q/#,#.json",
-			"forecastio": "https://api.forecast.io/forecast/a48eb522ce6b50ffcb1b69cf4655c8eb/#,#?units=si&lang=es" /*TODO FIX*/
+			"openweathermap": "https://api.openweathermap.org/data/2.5/forecast?lat=#&lon=#&lang=es&units=metric&APPID=e3993f2ed6f2dd3b82764b0fc55d3f2c"
+			/*"forecastio": "https://api.forecast.io/forecast/a48eb522ce6b50ffcb1b69cf4655c8eb/#,#?units=si&lang=es" TODO FIX*/
 		};
 
 		var Converters = {
@@ -325,6 +336,7 @@
 					m.vien = d.wspd.metric;
 					m.vdir = d.wdir.degrees;
 					m.radi = d.uvi;
+					m.text = d.wx;
 					r.push(m);
 				}
 				return r;
@@ -343,6 +355,7 @@
 					m.prec = (d.rain && d.rain["3h"]) ? d.rain["3h"] : 0.0;
 					m.vien = parseFloat(d.wind.speed * 3.6).toFixed(1);
 					m.vdir = d.wind.deg;
+					m.text = d.weather[0].description;
 					r.push(m);
 				}
 				return r;
