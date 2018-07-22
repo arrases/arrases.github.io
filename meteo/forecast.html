@@ -44,6 +44,7 @@
 			border-top: 1px solid black;
 			margin: .75rem 0 0 0;
 			display: flex;
+			cursor: pointer;
 		}
 
 		.mto > div {
@@ -77,6 +78,14 @@
 
 		button.on {
 			background-color: lime;
+		}
+
+		.ld {
+			background-color: gold;
+		}
+
+		.ch {
+			color: #888;
 		}
 	</style>
 </head>
@@ -207,7 +216,7 @@
 				vi = Math.max(vi, d.vien);
 				vdir += (d.vdir * 0.27);
 				s++;
-				console.log(d.vdir, vdir, s);
+				//console.log(d.vdir, vdir, s);
 				$mto.append(
 					$("<div>")
 						.append(newSpan(formateaDate(d.fech, "HH")))
@@ -251,14 +260,33 @@
 				var src = $("header > button.on").html();
 				var url = getUrl(src, p);
 				console.log(url, ev);
-				$.ajax(url).done(function (d) {
+				var $tar = $(ev.target);
+				$tar.addClass("ld");
+				getUrlData(url).then(function (d) {
 					var data = Converters[src](d);
-					var $par = $(ev.target).parent();
+					var $par = $tar.parent();
 					$par.find(".mto").remove();
 					var $mto = $('<div class="mto">');
 					$par.append($mto);
 					cargarPrediccion($mto, data);
+					$tar.removeClass("ld");
+					$tar.toggleClass("ch", Number.isInteger(d.tscache));
 				});
+			});
+		}
+
+		function getUrlData (url) {
+			return new Promise(function (resolve, reject) {
+				var cdata = sessionStorage[url];
+				if (cdata && JSON.parse(cdata).tscache + 600000 > Date.now()) {
+					resolve(JSON.parse(cdata));
+				} else {
+					$.ajax(url).done(function (data) {
+						data.tscache = Date.now();
+						sessionStorage[url] = JSON.stringify(data);
+						resolve(data);
+					});
+				}
 			});
 		}
 		
@@ -317,7 +345,8 @@
 
 		const Sources = {
 			"wunderground": "https://api.wunderground.com/api/3b0231f0d1ebf323/hourly10day/lang:SP/q/#,#.json",
-			"openweathermap": "https://api.openweathermap.org/data/2.5/forecast?lat=#&lon=#&lang=es&units=metric&APPID=e3993f2ed6f2dd3b82764b0fc55d3f2c"
+			"openweathermap": "https://api.openweathermap.org/data/2.5/forecast?lat=#&lon=#&lang=es&units=metric&APPID=e3993f2ed6f2dd3b82764b0fc55d3f2c",
+			"met.no": "https://api.met.no/weatherapi/locationforecast/1.9/?lat=#&lon=#"
 			/*"forecastio": "https://api.forecast.io/forecast/a48eb522ce6b50ffcb1b69cf4655c8eb/#,#?units=si&lang=es" TODO FIX*/
 		};
 
@@ -358,6 +387,12 @@
 					m.text = d.weather[0].description;
 					r.push(m);
 				}
+				return r;
+			},
+			"met.no": function (data) {
+				var r = [];
+				console.log(data);
+				debugger;
 				return r;
 			},
 			"forecastio": function (data) {
