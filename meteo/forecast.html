@@ -8,19 +8,15 @@
 		body {
 			font-family: sans-serif;
 			font-size: 1rem;
+			text-align: center;
 		}
 
 		body > div {
-			border: 1px solid #bbb;
-			margin: .4rem;
 			display: inline-block;
-			padding: .2rem;
-		}
-
-		@media (max-width: 425px) {
-			body > div {
-				display: block;
-			}
+			margin: .4rem;
+			padding: .3rem;
+			min-width: 10rem;
+			border: 1px solid #bbb;
 		}
 
 		body > div > a {
@@ -32,7 +28,6 @@
 		.mto {
 			display: inline-block;
 			min-width: 10rem;
-			max-width: 20rem;
 			border: 1px solid #eee;
 			padding: .5rem;
 			max-height: 33rem;
@@ -76,34 +71,38 @@
 		.mn::before { content: "\25BC"; }
 		.wd::before { content: "\2193"; }
 
-		button.on {
-			background-color: lime;
+		.on { background-color: lime; }
+		.ld { background-color: gold; }
+		.er { background-color: red; }
+		.ch { color: #888; }
+
+		button {
+			border: 1px solid #4b4b4b;
+			background-color: #eee;
+			padding: .35rem;
+			margin: .15rem;
 		}
 
-		.ld {
-			background-color: gold;
+		ul {
+			padding-left: 1rem;
 		}
 
-		.ch {
-			color: #888;
+		li {
+			text-align: initial;
+			cursor: pointer;
+		}
+
+		input {
+			border: none;
+			border-bottom: 1px solid #888;
 		}
 	</style>
 </head>
 <body>
-	<header></header>
-	<div>
-		<a onclick="pronostico2(0);">Geolocalización</a>
-	</div>
-	<div>
-		<a onclick="pronostico2(1);">Zizurkil</a>
-	</div>
-	<div>
-		<a onclick="pronostico2(2);">Mambrillas de Lara</a>
-	</div>
-	<div>
-		<a onclick="pronostico2(3);">Santa Pola</a>
-	</div>
+	<nav class="fuentes"></nav>
 	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+	<!--<script src="jquery-3.1.1.min.js"></script><!--LOCAL-->
+	<!--<script src="data.js"></script><!--LOCAL-->
 	<script>
 		var ARR_D100 = [0, 10,20,30,40,50,60,70,80,90,100];
 
@@ -148,23 +147,6 @@
 			return escala.col[escala.col.length - 1];
 		}
 
-		function colorear ($contenedor) {
-			var addColor = function (el, escala) {
-				var val = parseFloat($(el).html());
-				if (val === 0.0 || isNaN(val)) {
-					$(el).html("&minus;");
-					return;
-				}
-				$(el).css("background-color", getFromEscala(escala, val));
-			};
-			$contenedor.find(".tc").each((i, el) => addColor(el, ESCALA_TEMPERATURA));
-			$contenedor.find(".nu").each((i, el) => addColor(el, ESCALA_NUBES));
-			$contenedor.find(".hu").each((i, el) => addColor(el, ESCALA_HUMEDAD));
-			$contenedor.find(".ws").each((i, el) => addColor(el, ESCALA_VIENTO));
-			$contenedor.find(".mm").each((i, el) => addColor(el, ESCALA_PRECIP));
-			$contenedor.find(".uv").each((i, el) => addColor(el, ESCALA_RADIACION));
-		}
-
 		function cargarPrediccion ($mto, data) {
 			var clickCabecera = function (e) {
 				var visible = null;
@@ -179,44 +161,16 @@
 			};
 
 			var ultimoDia = null;
-			var $tMax, $tMin, $pr, $vi, $vdir;
-			var tMax = -999, tMin = 999, pr = 0.0, vi = 0, vdir = 0, s = 0;
 			for (var i = 0; i < data.length; i++) {
 				var d = data[i];
 				if (ultimoDia !== d.fech.getDate()) {
 					ultimoDia = d.fech.getDate();
-					if ($tMax !== undefined) {
-						$tMax.html(tMax);
-						$tMin.html(tMin);
-						$pr.html(pr.toFixed(1));
-						$vi.html(vi);
-						$vdir.attr("style", "transform: rotate(" + ((vdir / s) * 3.6) + "deg);");
-						//console.log($vdir, vdir, s, ((vdir / s) * 3.6));
-						tMax = -999, tMin = 999, pr = 0.0, vi = 0, vdir = 0, s = 0;
-					}
-					$tMax = newSpan("", "mx tc");
-					$tMin = newSpan("", "mn tc");
-					$pr = newSpan("", "mm");
-					$vi = newSpan("", "ws");
-					$vdir = newSpan("", "wd");
 					$mto.append(
 						$("<h4>")
 							.append(newSpan(formateaDate(d.fech)))
-							.append($tMax)
-							.append($tMin)
-							.append($pr)
-							.append($vi)
-							//.append($vdir)
 							.on("click", clickCabecera)
 					);
 				}
-				tMax = Math.max(tMax, d.temp);
-				tMin = Math.min(tMin, d.temp);
-				pr += d.prec;
-				vi = Math.max(vi, d.vien);
-				vdir += (d.vdir * 0.27);
-				s++;
-				//console.log(d.vdir, vdir, s);
 				$mto.append(
 					$("<div>")
 						.append(newSpan(formateaDate(d.fech, "HH")))
@@ -230,53 +184,117 @@
 						.append(newSpan(d.radi, "uv"))
 						.append(newSpan(d.text))
 				);
-				if (i === data.length - 1) {
-					$tMax.html(tMax);
-					$tMin.html(tMin);
-					$pr.html(pr.toFixed(1));
-					$vi.html(vi);
-					$vdir.attr("style", "transform: rotate(" + ((vdir / s) * 3.6) + "deg);");
-				}
+			}
+			$mto.find("h4").trigger("click");
+		}
+
+		function calcularResumenes ($mto) {
+			var $cab = null;
+			//			ct,tMx,tMd, tMn,Nu,Pr, V, H, uv,hPa
+			var acum = [0, -999, 0, 999, 0, 0, 0, 0, 0, []];
+
+			function mostrar () {
+				var variacionPresion = acum[9].reduce(function (a, b) { return Math.max(a, b); }) 
+					- acum[9].reduce(function (a, b) { return Math.min(a, b); });
+				var signo = acum[9][0] > acum[9][acum[9].length - 1] ? "-" : "+";
+				$cab
+					.append(newSpan(acum[1], "mx tc"))
+					.append(newSpan((acum[2] / acum[0]).toFixed(1), "md tc"))
+					.append(newSpan(acum[3], "mn tc"))
+					.append(newSpan((acum[4] / acum[0]).toFixed(1), "pc nu"))
+					.append(newSpan(acum[5].toFixed(1), "mm"))
+					.append(newSpan((acum[7] / acum[0]).toFixed(1), "pc hu"))
+					.append(signo)
+					.append(newSpan(variacionPresion, "pr uv"))
+					.append(newSpan(acum[6], "ws"))
+					.append(newSpan(acum[8], "uv"))
+				;
 			}
 
-			colorear($mto);
-			$("h4").trigger("click");
+			for (let el of $mto.children()) {
+				let $el = $(el);
+				if (el.tagName === "H4") {
+					if (acum[0] !== 0) {
+						mostrar();
+					}
+					$cab = $el;
+					acum = [0, -999, 0, 999, 0, 0, 0, 0, 0, []];
+				} else {
+					acum[0]++;
+					var t = parseFloat($el.find(".tc").html());
+					acum[1] = Math.max(acum[1], t);
+					acum[2] += t;
+					acum[3] = Math.min(acum[3], t);
+					acum[4] += parseFloat($el.find(".nu").html());
+					acum[5] += parseFloat($el.find(".mm").html());
+					acum[6] = Math.max(acum[6], parseFloat($el.find(".ws").html()));
+					acum[7] += parseFloat($el.find(".hu").html());
+					acum[8] = Math.max(acum[8], $el.find(".uv").html());
+					acum[9].push($el.find(".pr").html());
+				}
+			}
+			if (acum[0] !== 0) {
+				mostrar();
+			}
 		}
 
-		function pronostico (e, data) {
-			e = e || event;
-			data = data || Converters.wunderground(dataWG);
-			var $par = $(e.target).parent();
-			$par.find(".mto").remove();
-			var $mto = $('<div class="mto">');
-			$par.append($mto);
-			cargarPrediccion($mto, data);
+		function colorearValores ($mto) {
+			var addColor = function (el, escala) {
+				var val = parseFloat($(el).html());
+				if (val === 0.0 || isNaN(val)) {
+					$(el).html("&minus;");
+					return;
+				}
+				$(el).css("background-color", getFromEscala(escala, val));
+			};
+			$mto.find(".tc").each((i, el) => addColor(el, ESCALA_TEMPERATURA));
+			$mto.find(".nu").each((i, el) => addColor(el, ESCALA_NUBES));
+			$mto.find(".hu").each((i, el) => addColor(el, ESCALA_HUMEDAD));
+			$mto.find(".ws").each((i, el) => addColor(el, ESCALA_VIENTO));
+			$mto.find(".mm").each((i, el) => addColor(el, ESCALA_PRECIP));
+			$mto.find(".uv").each((i, el) => addColor(el, ESCALA_RADIACION));
 		}
 
-		function pronostico2 (g) {
-			var ev = event;
-			getPosicion(g).then(function (p) {
+		function pronostico (ev) {
+			var $tar = $(ev.target);
+			var failFnc = function (err) {
+				$tar.addClass("er");
+			};
+			$tar.removeClass("ld ch er");
+			getPosicion($tar).then(function (p) {
 				console.log("Geoposición", p);
-				var src = $("header > button.on").html();
+				var src = $(".fuentes > button.on").html();
 				var url = getUrl(src, p);
 				console.log(url, ev);
-				var $tar = $(ev.target);
 				$tar.addClass("ld");
 				getUrlData(url).then(function (d) {
-					var data = Converters[src](d);
+					var data;
+					try {
+						data = Converters[src](d);
+					} catch (err) {
+						mostrarMensaje(`Error converter ${src}`, d);
+						failFnc();
+						return;
+					}
 					var $par = $tar.parent();
 					$par.find(".mto").remove();
 					var $mto = $('<div class="mto">');
 					$par.append($mto);
 					cargarPrediccion($mto, data);
+					calcularResumenes($mto);
+					colorearValores($mto);
 					$tar.removeClass("ld");
 					$tar.toggleClass("ch", Number.isInteger(d.tscache));
-				});
-			});
+				}, failFnc);
+			}, failFnc);
 		}
 
 		function getUrlData (url) {
 			return new Promise(function (resolve, reject) {
+				if (location.protocol === "file:") {
+					resolve(jsonPrueba);
+					return;
+				}
 				var cdata = sessionStorage[url];
 				if (cdata && JSON.parse(cdata).tscache + 600000 > Date.now()) {
 					resolve(JSON.parse(cdata));
@@ -285,37 +303,38 @@
 						data.tscache = Date.now();
 						sessionStorage[url] = JSON.stringify(data);
 						resolve(data);
+					}).error(function (err) {
+						reject(err);	
 					});
 				}
 			});
 		}
 		
-		function getPosicion (g) {
+		function getPosicion ($tar) {
 			return new Promise(function (resolve, reject) {
-				switch (g) {
-					case 1:
-						resolve([43.193777,-2.058095]);	//Zizurkil
-						break;
-					case 2:
-						resolve([42.094992,-3.460735]);	//Mambrillas de Lara
-						break;
-					case 3:
-						resolve([38.194851,-0.569823]);	//Santa Pola
-						break;
-					default:
-						navigator.geolocation.getCurrentPosition(function (p) {
-							resolve([p.coords.latitude, p.coords.longitude]);
-						}, function (err) {
-							console.error(err);
-							alert(err);
-							reject(err);
-						}, {
-							enableHighAccuracy: true,
-							timeout: 10000,
-							maximumAge: 0
-						});
+				if ($tar) {
+					var coords = $tar.data("c");;
+					if (coords) {
+						resolve(coords);
+						return;
+					}
 				}
+				navigator.geolocation.getCurrentPosition(function (p) {
+					resolve([p.coords.latitude, p.coords.longitude]);
+				}, function (err) {
+					mostrarMensaje("Error de geolocalización", err);
+					reject(err);
+				}, {
+					enableHighAccuracy: true,
+					timeout: 10000,
+					maximumAge: 0
+				});
 			});
+		}
+
+		function mostrarMensaje (txt, info) {
+			console.error(txt, info);
+			//	TODO mostrar toast
 		}
 
 		function getUrl (src, coords) {
@@ -416,12 +435,6 @@
 			}
 		};
 
-		function elegirFuente () {
-			var $este = $(event.target);
-			$este.parent().children().removeClass("on");
-			$este.addClass("on");
-		}
-
 		(function crearFuentes () {
 			var keys = Object.keys(Sources);
 			for (var i = 0; i < keys.length; i++) {
@@ -434,10 +447,67 @@
 				if (i === 0) {
 					$b.addClass("on");
 				}
-				$("header").append($b);
+				$(".fuentes").append($b);
 			}
 		}());
+
+		(function crearLocalizaciones () {
+			var localizaciones = [{
+				"n": "Geolocalización",
+				"c": null
+			},
+			{
+				"n": "Zizurkil",
+				"c": [43.193777,-2.058095]
+			},
+			{
+				"n": "Mambrillas de Lara",
+				"c": [42.094992,-3.460735]
+			},
+			{
+				"n": "Santa Pola",
+				"c": [38.194851,-0.569823]
+			}];
+			
+			/*$("body").append(
+				$("<div>")
+					.append($("<input placeholder='Nueva localización' onchange='buscar(this.value);'>"))
+					.append($("<ul>"))
+			);*/
+
+			for (let loc of localizaciones) {
+				addLocalizacion(loc);
+			}
+		}());
+
+		function addLocalizacion (loc) {
+			$("body").append(
+				$("<div>").append(
+					$("<a>")
+						.html(loc.n)
+						.data("c", loc.c)
+						.on("click", pronostico)
+				)
+			);
+		}
+
+		function buscar (loc) {
+			if (loc.length > 1) {
+				//	TODO Lanzar consulta
+			}
+			var $ul = $("ul");
+			$ul.empty();
+			var resultados = [{"n": "Loc1", "c": []}, {"n": "Localización 2", "c": []}, {"n": "Loc-3", "c": []}];
+			for (let result of resultados) {
+				$ul.append(
+					$("<li>")
+						.html(result.n)
+						.on("click", function () {
+							addLocalizacion(result);
+						})
+				);
+			}
+		}
 	</script>
 </body>
 </html>
-
