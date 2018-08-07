@@ -96,44 +96,65 @@
 			border: none;
 			border-bottom: 1px solid #888;
 		}
+
+		.toast {
+			display: none;
+			position: fixed;
+			bottom: 1rem;
+			left: 5%;
+			right: 5%;
+			border-radius: 1rem;
+			background-color: #333;
+			border: 1px solid #111;
+			color: #bbb;
+			text-align: center;
+		}
+
+		.toast.on {
+			display: block;
+		}
 	</style>
 </head>
 <body>
 	<nav class="fuentes"></nav>
+	<div class="toast"></div>
 	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-	<!--<script src="jquery-3.1.1.min.js"></script><!--LOCAL-->
-	<!--<script src="data.js"></script><!--LOCAL-->
+	<!--script src="jquery-3.1.1.min.js"></script><!--LOCAL-->
+	<!--script src="data.js"></script><!--LOCAL-->
 	<script>
-		var ARR_D100 = [0, 10,20,30,40,50,60,70,80,90,100];
+		const CL_ON = "on",
+			CL_LD = "ld",
+			CL_ER = "er",
+			CL_CH = "ch",
+			EV_CL = "click";
 
-		var ESCALA_TEMPERATURA = {
-			val: [-99,-50,-40,-35,-30,-28,-26,-24,-22,-20,-18,-16,-14,-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50],
-			col: ["#640050","#730064","#820078","#91008c","#a01ea0","#aa2daf","#b446be","#aa4bc3","#a050c8","#9646cd","#8c3cd2","#8232d7","#7828dc","#6e1ee1","#326ecd","#4682d7","#5a96e1","#6eaaeb","#64b9f5","#50be82","#5ac832","#6ed73c","#82e646","#96f05a","#ffff64","#fffa50","#fff03c","#ffdc32","#ffc832","#ffb432","#ffa000","#ff8c00","#ff7800","#ff6900","#f03c14","#dc3c14","#c81e0f","#b4000f","#a0000f","#82001e","#a00546","#c80a64","#dc3282","#f064a0","#ff82be"]
-		};
+		const ARR_D100 = [0,10,20,30,40,50,60,70,80,90,100];
 
-		var ESCALA_NUBES = {
-			val: ARR_D100,
-			col: ["#fff","#F0F0F5","#E0E0EB","#D1D1E0","#C2C2D6","#B2B2CC","#A3A3C2","#9494B8","#8585AD","#7575A3","#666699"]
-		};
-
-		var ESCALA_PRECIP = {
-			val: [0,1,2,4,6,8,10,12,14,16,20,26,35,43,51,65,75,85,95,105,115],
-			col: ["#ccffff","#c7f7ff","#c2f0ff","#bde8ff","#b8e0ff","#b2d9ff","#add1ff","#a8c9ff","#a3c2ff","#9ebaff","#99b2ff","#94abff","#8fa3ff","#8a9cff","#8594ff","#808cff","#7a85ff","#757dff","#7075ff","#6b6eff","#6666ff"]
-		}
-
-		var ESCALA_HUMEDAD = {
-			val: ARR_D100,
-			col: ["#EBEBFF","#D6D6FF","#C2C2FF","#ADADFF","#9999FF","#8585FF","#7070FF","#5C5CFF","#4747FF","#3333FF"]
-		};
-		
-		var ESCALA_VIENTO = {
-			val: [0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110],
-			col: ["#ccffcc","#c2f5c2","#b8ebb8","#ade0ad","#a3d6a3","#99cc99","#8fc28f","#85b885","#7aad7a","#70a370","#669966","#5c8f5c","#528552","#477a47","#3d703d","#336633","#295c29","#1f521f","#144714","#0a3d0a","#003300"]
-		};
-
-		var ESCALA_RADIACION = {
-			val: [0,1,3,5,7,8,9,10,11,12],
-			col: ["#fff","#ffe6e6","#ffb3b3","#ff9999","#ff6666","#ff4d4d","#ff1a1a","#ff0000","#e60000","#cc0000","#b30000","#990000","#800000","#660000","#4d0000"]
+		const ESCALAS = {
+			TEMPERATURA: {
+				val: [-99,-50,-40,-35,-30,-28,-26,-24,-22,-20,-18,-16,-14,-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50],
+				col: ["#640050","#730064","#820078","#91008c","#a01ea0","#aa2daf","#b446be","#aa4bc3","#a050c8","#9646cd","#8c3cd2","#8232d7","#7828dc","#6e1ee1","#326ecd","#4682d7","#5a96e1","#6eaaeb","#64b9f5","#50be82","#5ac832","#6ed73c","#82e646","#96f05a","#ffff64","#fffa50","#fff03c","#ffdc32","#ffc832","#ffb432","#ffa000","#ff8c00","#ff7800","#ff6900","#f03c14","#dc3c14","#c81e0f","#b4000f","#a0000f","#82001e","#a00546","#c80a64","#dc3282","#f064a0","#ff82be"]
+			},
+			NUBES: {
+				val: ARR_D100,
+				col: ["#fff","#F0F0F5","#E0E0EB","#D1D1E0","#C2C2D6","#B2B2CC","#A3A3C2","#9494B8","#8585AD","#7575A3","#666699"]
+			},
+			PRECIP: {
+				val: [0,1,2,4,6,8,10,12,14,16,20,26,35,43,51,65,75,85,95,105,115],
+				col: ["#ccffff","#c7f7ff","#c2f0ff","#bde8ff","#b8e0ff","#b2d9ff","#add1ff","#a8c9ff","#a3c2ff","#9ebaff","#99b2ff","#94abff","#8fa3ff","#8a9cff","#8594ff","#808cff","#7a85ff","#757dff","#7075ff","#6b6eff","#6666ff"]
+			},
+			HUMEDAD: {
+				val: ARR_D100,
+				col: ["#EBEBFF","#D6D6FF","#C2C2FF","#ADADFF","#9999FF","#8585FF","#7070FF","#5C5CFF","#4747FF","#3333FF"]
+			},
+			VIENTO: {
+				val: [0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110],
+				col: ["#ccffcc","#c2f5c2","#b8ebb8","#ade0ad","#a3d6a3","#99cc99","#8fc28f","#85b885","#7aad7a","#70a370","#669966","#5c8f5c","#528552","#477a47","#3d703d","#336633","#295c29","#1f521f","#144714","#0a3d0a","#003300"]
+			},
+			RADIACION: {
+				val: [0,1,3,5,7,8,9,10,11,12],
+				col: ["#fff","#ffe6e6","#ffb3b3","#ff9999","#ff6666","#ff4d4d","#ff1a1a","#ff0000","#e60000","#cc0000","#b30000","#990000","#800000","#660000","#4d0000"]
+			}
 		};
 
 		function getFromEscala (escala, valor) {
@@ -168,7 +189,7 @@
 					$mto.append(
 						$("<h4>")
 							.append(newSpan(formateaDate(d.fech)))
-							.on("click", clickCabecera)
+							.on(EV_CL, clickCabecera)
 					);
 				}
 				$mto.append(
@@ -185,7 +206,7 @@
 						.append(newSpan(d.text))
 				);
 			}
-			$mto.find("h4").trigger("click");
+			$mto.find("h4").trigger(EV_CL);
 		}
 
 		function calcularResumenes ($mto) {
@@ -194,9 +215,52 @@
 			var acum = [0, -999, 0, 999, 0, 0, 0, 0, 0, []];
 
 			function mostrar () {
-				var variacionPresion = acum[9].reduce(function (a, b) { return Math.max(a, b); }) 
+				function presionVariacion () {
+					return acum[9].reduce(function (a, b) { return Math.max(a, b); }) 
 					- acum[9].reduce(function (a, b) { return Math.min(a, b); });
-				var signo = acum[9][0] > acum[9][acum[9].length - 1] ? "-" : "+";
+				}
+
+				function presionSigno () {
+					return acum[9][0] > acum[9][acum[9].length - 1] ? "-" : "+";
+				}
+				
+				function vientoDireccion () {
+					const DIR = ["N", "E", "S", "W"];
+					acum[10] = acum[10].map(function (dir) {
+						/*
+						var d = Math.ceil(dir / (360 / DIR.length));
+						d = d >= DIR.length ? 0 : d;
+						return DIR[d];*/
+						if (0 <= dir && dir < 45) {
+							return "N";
+						} else if (45 <= dir && dir < 135) {
+							return "E";
+						} else if (135 <= dir && dir < 225) {
+							return "S";
+						} else if (225 <= dir && dir < 315) {
+							return "W";
+						} else {
+							return "N";
+						}
+					});
+					acum[10] = [
+						acum[10].filter(function (val) { return val === "N"; }).length,
+						acum[10].filter(function (val) { return val === "E"; }).length,
+						acum[10].filter(function (val) { return val === "S"; }).length,
+						acum[10].filter(function (val) { return val === "W"; }).length
+					];
+					let max = 0;
+					let dir = "";
+					for (let i = 0; i < acum[10].length; i++) {
+						if (acum[10][i] === max) {
+							dir += DIR[i];
+						} else if (acum[10][i] > max) {
+							max = acum[10][i];
+							dir = DIR[i];
+						}
+					}
+					return dir;
+				}
 				$cab
 					.append(newSpan(acum[1], "mx tc"))
 					.append(newSpan((acum[2] / acum[0]).toFixed(1), "md tc"))
@@ -204,8 +268,9 @@
 					.append(newSpan((acum[4] / acum[0]).toFixed(1), "pc nu"))
 					.append(newSpan(acum[5].toFixed(1), "mm"))
 					.append(newSpan((acum[7] / acum[0]).toFixed(1), "pc hu"))
-					.append(signo)
-					.append(newSpan(variacionPresion, "pr uv"))
+					.append(presionSigno())
+					.append(newSpan(presionVariacion(), "pr uv"))
+					.append(newSpan(vientoDireccion()))
 					.append(newSpan(acum[6], "ws"))
 					.append(newSpan(acum[8], "uv"))
 				;
@@ -218,7 +283,7 @@
 						mostrar();
 					}
 					$cab = $el;
-					acum = [0, -999, 0, 999, 0, 0, 0, 0, 0, []];
+					acum = [0, -999, 0, 999, 0, 0, 0, 0, 0, [], []];
 				} else {
 					acum[0]++;
 					var t = parseFloat($el.find(".tc").html());
@@ -231,6 +296,7 @@
 					acum[7] += parseFloat($el.find(".hu").html());
 					acum[8] = Math.max(acum[8], $el.find(".uv").html());
 					acum[9].push($el.find(".pr").html());
+					acum[10].push($el.find(".wd").data("deg"));
 				}
 			}
 			if (acum[0] !== 0) {
@@ -247,26 +313,25 @@
 				}
 				$(el).css("background-color", getFromEscala(escala, val));
 			};
-			$mto.find(".tc").each((i, el) => addColor(el, ESCALA_TEMPERATURA));
-			$mto.find(".nu").each((i, el) => addColor(el, ESCALA_NUBES));
-			$mto.find(".hu").each((i, el) => addColor(el, ESCALA_HUMEDAD));
-			$mto.find(".ws").each((i, el) => addColor(el, ESCALA_VIENTO));
-			$mto.find(".mm").each((i, el) => addColor(el, ESCALA_PRECIP));
-			$mto.find(".uv").each((i, el) => addColor(el, ESCALA_RADIACION));
+			$mto.find(".tc").each((i, el) => addColor(el, ESCALAS.TEMPERATURA));
+			$mto.find(".nu").each((i, el) => addColor(el, ESCALAS.NUBES));
+			$mto.find(".hu").each((i, el) => addColor(el, ESCALAS.HUMEDAD));
+			$mto.find(".ws").each((i, el) => addColor(el, ESCALAS.VIENTO));
+			$mto.find(".mm").each((i, el) => addColor(el, ESCALAS.PRECIP));
+			$mto.find(".uv").each((i, el) => addColor(el, ESCALAS.RADIACION));
 		}
 
 		function pronostico (ev) {
 			var $tar = $(ev.target);
 			var failFnc = function (err) {
-				$tar.addClass("er");
+				mostrarMensaje("Error en pronostico", err);
+				$tar.addClass(CL_ER);
 			};
-			$tar.removeClass("ld ch er");
+			$tar.removeClass(`${CL_LD} ${CL_CH} ${CL_ER}`);
 			getPosicion($tar).then(function (p) {
-				console.log("Geoposición", p);
 				var src = $(".fuentes > button.on").html();
 				var url = getUrl(src, p);
-				console.log(url, ev);
-				$tar.addClass("ld");
+				$tar.addClass(CL_LD);
 				getUrlData(url).then(function (d) {
 					var data;
 					try {
@@ -283,8 +348,8 @@
 					cargarPrediccion($mto, data);
 					calcularResumenes($mto);
 					colorearValores($mto);
-					$tar.removeClass("ld");
-					$tar.toggleClass("ch", Number.isInteger(d.tscache));
+					$tar.removeClass(CL_LD);
+					$tar.toggleClass(CL_CH, Number.isInteger(d.tscache));
 				}, failFnc);
 			}, failFnc);
 		}
@@ -292,8 +357,8 @@
 		function getUrlData (url) {
 			return new Promise(function (resolve, reject) {
 				if (location.protocol === "file:") {
-					resolve(jsonPrueba);
-					return;
+					//resolve(jsonPrueba);
+					//return;
 				}
 				var cdata = sessionStorage[url];
 				if (cdata && JSON.parse(cdata).tscache + 600000 > Date.now()) {
@@ -303,7 +368,7 @@
 						data.tscache = Date.now();
 						sessionStorage[url] = JSON.stringify(data);
 						resolve(data);
-					}).error(function (err) {
+					}).fail(function (err) {
 						reject(err);	
 					});
 				}
@@ -332,9 +397,17 @@
 			});
 		}
 
+		var toastTimer = null;
+
 		function mostrarMensaje (txt, info) {
 			console.error(txt, info);
-			//	TODO mostrar toast
+			clearTimeout(toastTimer);
+			$(".toast")
+				.addClass(CL_ON)
+				.html(txt);
+			toastTimer = setTimeout(function () {
+				$(".toast").removeClass(CL_ON);
+			}, 7500);
 		}
 
 		function getUrl (src, coords) {
@@ -439,13 +512,13 @@
 			var keys = Object.keys(Sources);
 			for (var i = 0; i < keys.length; i++) {
 				var $b = $(`<button>${keys[i]}</button>`);
-				$b.on("click", function elegirFuente (e) {
+				$b.on(EV_CL, function elegirFuente (e) {
 					var $este = $(e.target);
-					$este.parent().children().removeClass("on");
-					$este.addClass("on");
+					$este.parent().children().removeClass(CL_ON);
+					$este.addClass(CL_ON);
 				});
 				if (i === 0) {
-					$b.addClass("on");
+					$b.addClass(CL_ON);
 				}
 				$(".fuentes").append($b);
 			}
@@ -486,7 +559,7 @@
 					$("<a>")
 						.html(loc.n)
 						.data("c", loc.c)
-						.on("click", pronostico)
+						.on(EV_CL, pronostico)
 				)
 			);
 		}
@@ -502,7 +575,7 @@
 				$ul.append(
 					$("<li>")
 						.html(result.n)
-						.on("click", function () {
+						.on(EV_CL, function () {
 							addLocalizacion(result);
 						})
 				);
