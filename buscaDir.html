@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <title>Retrieving Autocomplete Predictions</title>
+  </head>
+  <body>
+	<input type="text" placeholder="Introduce algo para buscar" id="buscar" />
+	<ul id="results"></ul>
+    <script>
+		function autocompletar () {
+			var val = this.value;
+			if (val.length < 3) {
+				$("#results").empty();
+				return;
+			}
+			var service = new google.maps.places.AutocompleteService();
+			service.getPlacePredictions({
+				input: val,
+				types: ['geocode'],
+				componentRestrictions: {country: 'es'}
+            }, 
+            displaySuggestions);
+		}
+		
+		function displaySuggestions (predictions, status) {
+			if (status != google.maps.places.PlacesServiceStatus.OK) {
+				console.error(status);
+				return;
+			}
+			$("#results").empty();
+			predictions.forEach(function (prediction) {
+				$("#results").append(
+					$("<li>")
+						.append(prediction.description)
+						.data("ref", prediction.reference)
+						.on("click", function () {
+							var ref = $(this).data("ref");
+							var place = new google.maps.places.PlacesService($("<div>")[0]);
+							place.getDetails({reference: ref}, function (details, status) {
+								console.log("Coordenadas:", details.geometry.location.toString());
+							});
+						})
+				);
+			});
+			console.log("predicciones", predictions);
+		}
+
+		function initService () {
+			$("#buscar").on("keyup", autocompletar);
+		}
+    </script>
+	<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?region=ES&language=es&key=AIzaSyBaLV88HdV53djbHpLbIuoxo3ya6-DWYgc&libraries=places&callback=initService" async defer></script>
+  </body>
+</html>
