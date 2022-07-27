@@ -2,13 +2,14 @@
 <html lang="es">
 <head>
 	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, user-scalable=no" />
+	<meta name="viewport" content="width=device-width" />
 	<link rel=icon type=image/png href=icono.png sizes=192x192>
 	<style>
 		body {
 			font-family: sans-serif;
 			font-size: 1rem;
 			text-align: center;
+			background-color: #eee;
 		}
 
 		body > div {
@@ -118,8 +119,7 @@
 <body>
 	<nav class="fuentes"></nav>
 	<div class="toast"></div>
-	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-	<!--script src="jquery-3.1.1.min.js"></script><!--LOCAL-->
+	<script src="jquery-3.1.1.min.js"></script>
 	<!--script src="data.js"></script><!--LOCAL-->
 	<script>
 		const CL_ON = "on",
@@ -169,7 +169,7 @@
 		}
 
 		function cargarPrediccion ($mto, data) {
-			var clickCabecera = function (e) {
+			var clickCabecera = e => {
 				var visible = null;
 				var $el = $(e.currentTarget).next();
 				while ($el.length > 0 && $el[0].tagName !== "H4") {
@@ -227,10 +227,6 @@
 				function vientoDireccion () {
 					const DIR = ["N", "E", "S", "W"];
 					acum[10] = acum[10].map(function (dir) {
-						/*
-						var d = Math.ceil(dir / (360 / DIR.length));
-						d = d >= DIR.length ? 0 : d;
-						return DIR[d];*/
 						if (0 <= dir && dir < 45) {
 							return "N";
 						} else if (45 <= dir && dir < 135) {
@@ -244,10 +240,10 @@
 						}
 					});
 					acum[10] = [
-						acum[10].filter(function (val) { return val === "N"; }).length,
-						acum[10].filter(function (val) { return val === "E"; }).length,
-						acum[10].filter(function (val) { return val === "S"; }).length,
-						acum[10].filter(function (val) { return val === "W"; }).length
+						acum[10].filter((val) => { return val === "N"; }).length,
+						acum[10].filter((val) => { return val === "E"; }).length,
+						acum[10].filter((val) => { return val === "S"; }).length,
+						acum[10].filter((val) => { return val === "W"; }).length
 					];
 					let max = 0;
 					let dir = "";
@@ -305,7 +301,7 @@
 		}
 
 		function colorearValores ($mto) {
-			var addColor = function (el, escala) {
+			var addColor = (el, escala) => {
 				var val = parseFloat($(el).html());
 				if (val === 0.0 || isNaN(val)) {
 					$(el).html("&minus;");
@@ -323,16 +319,16 @@
 
 		function pronostico (ev) {
 			var $tar = $(ev.target);
-			var failFnc = function (err) {
+			var failFnc = err => {
 				mostrarMensaje("Error en pronostico", err);
 				$tar.addClass(CL_ER);
 			};
 			$tar.removeClass(`${CL_LD} ${CL_CH} ${CL_ER}`);
-			getPosicion($tar).then(function (p) {
+			getPosicion($tar).then(p => {
 				var src = $(".fuentes > button.on").html();
 				var url = getUrl(src, p);
 				$tar.addClass(CL_LD);
-				getUrlData(url).then(function (d) {
+				getUrlData(url, src).then(d => {
 					var data;
 					try {
 						data = Converters[src](d);
@@ -354,21 +350,21 @@
 			}, failFnc);
 		}
 
-		function getUrlData (url) {
+		function getUrlData (url, src) {
 			return new Promise(function (resolve, reject) {
 				if (location.protocol === "file:") {
-					//resolve(jsonPrueba);
-					//return;
+					resolve(jsonPrueba);
+					return;
 				}
 				var cdata = sessionStorage[url];
 				if (cdata && JSON.parse(cdata).tscache + 600000 > Date.now()) {
 					resolve(JSON.parse(cdata));
 				} else {
-					$.ajax(url).done(function (data) {
+					$.ajax(url).done(data => {
 						data.tscache = Date.now();
 						sessionStorage[url] = JSON.stringify(data);
 						resolve(data);
-					}).fail(function (err) {
+					}).fail(err => {
 						reject(err);	
 					});
 				}
@@ -378,15 +374,15 @@
 		function getPosicion ($tar) {
 			return new Promise(function (resolve, reject) {
 				if ($tar) {
-					var coords = $tar.data("c");;
+					var coords = $tar.data("c");
 					if (coords) {
 						resolve(coords);
 						return;
 					}
 				}
-				navigator.geolocation.getCurrentPosition(function (p) {
+				navigator.geolocation.getCurrentPosition(p => {
 					resolve([p.coords.latitude, p.coords.longitude]);
-				}, function (err) {
+				}, err => {
 					mostrarMensaje("Error de geolocalización", err);
 					reject(err);
 				}, {
@@ -436,19 +432,11 @@
 		}
 
 		const Sources = {
-			"openweathermap": "https://api.openweathermap.org/data/2.5/forecast?lat=#&lon=#&lang=es&units=metric&APPID=e3993f2ed6f2dd3b82764b0fc55d3f2c",
-			//"accuWeather": "http://dataservice.accuweather.com/forecasts/v1/daily/5day/@?apikey=VJ7qGZFMifQF8hOrmCifZoAwmjwzPYrA&language=es-es&details=true&metric=true",
-			/*"wunderground": "https://api.wunderground.com/api/3b0231f0d1ebf323/hourly10day/lang:SP/q/#,#.json",*/
+			"openweathermap3": "https://api.openweathermap.org/data/2.5/forecast?lat=#&lon=#&lang=es&units=metric&APPID=e3993f2ed6f2dd3b82764b0fc55d3f2c",
+			"openweathermap": "https://api.openweathermap.org/data/2.5/onecall?lat=#&lon=#&lang=es&cnt=1&units=metric&APPID=e3993f2ed6f2dd3b82764b0fc55d3f2c",
 			"met.no": "https://api.met.no/weatherapi/locationforecast/1.9/?lat=#&lon=#",
 			"darksky": "https://api.darksky.net/forecast/a48eb522ce6b50ffcb1b69cf4655c8eb/#,#?units=si&lang=es"
 		};
-
-		/*
-			http://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=VJ7qGZFMifQF8hOrmCifZoAwmjwzPYrA&q=43.193777%2C-2.058095&language=es-es&details=true&toplevel=true
-			{
-			"Version": 1,
-			"Key": "2323930",
-		*/
 
 		var Converters = {
 			"wunderground": function (data) {
@@ -471,6 +459,26 @@
 				return r;
 			},
 			"openweathermap": function (data) {
+				var r = [];
+				data = data.hourly;
+				for (var i = 0; i < data.length; i++) {
+					var m = {}, d = data[i];
+					m.fech = new Date(d.dt * 1000);
+					m.temp = d.temp.toFixed(1);
+					m.ciel = d.weather[0].id;
+					m.nubo = d.clouds;
+					m.hume = d.humidity;
+					m.pres = d.pressure.toFixed(0);
+					m.prec = (d.rain && d.rain["3h"]) ? d.rain["3h"] : 0.0;
+					m.prec += (d.snow && d.snow["3h"]) ? d.snow["3h"] : 0.0;
+					m.vien = parseFloat(d.wind_speed * 3.6).toFixed(1);
+					m.vdir = d.wind_deg;
+					m.text = d.weather[0].description;
+					r.push(m);
+				}
+				return r;
+			},
+			"openweathermap3": function (data) {
 				var r = [];
 				data = data.list;
 				for (var i = 0; i < data.length; i++) {
@@ -575,7 +583,7 @@
 					.append($("<ul>"))
 			);*/
 
-			for (let loc of localizaciones) {
+			for (const loc of localizaciones) {
 				addLocalizacion(loc);
 			}
 		}());
