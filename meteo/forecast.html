@@ -469,8 +469,8 @@
 					m.nubo = d.clouds;
 					m.hume = d.humidity;
 					m.pres = d.pressure.toFixed(0);
-					m.prec = (d.rain && d.rain["3h"]) ? d.rain["3h"] : 0.0;
-					m.prec += (d.snow && d.snow["3h"]) ? d.snow["3h"] : 0.0;
+					m.prec = (d.rain && d.rain["1h"]) ? d.rain["1h"] : 0.0;
+					m.prec += (d.snow && d.snow["1h"]) ? d.snow["1h"] : 0.0;
 					m.vien = parseFloat(d.wind_speed * 3.6).toFixed(1);
 					m.vdir = d.wind_deg;
 					m.text = d.weather[0].description;
