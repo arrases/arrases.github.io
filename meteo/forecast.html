@@ -556,10 +556,9 @@
 			}
 		}());
 
-		(function crearLocalizaciones () {
+		(async function crearLocalizaciones () {
 			var localizaciones = [{
-				"n": "Geolocalización",
-				"c": null
+				"n": "Geolocalización"
 			},
 			{
 				"n": "Zizurkil",
@@ -576,13 +575,14 @@
 				"c": [38.194851,-0.569823],
 				"k": 306471
 			}];
-			
-			/*$("body").append(
-				$("<div>")
-					.append($("<input placeholder='Nueva localización' onchange='buscar(this.value);'>"))
-					.append($("<ul>"))
-			);*/
 
+			let localizaciones = localStorage.getItem("almacenIF");
+			if (localizaciones === null) {
+				localizaciones = await $.getJSON("https://pastebin.com/raw/fxZzPxb0");
+				localStorage.setitem("almacenIF", JSON.stringify(localizaciones));
+			} else {
+				localizaciones = JSON.parse(localizaciones);
+			}
 			for (const loc of localizaciones) {
 				addLocalizacion(loc);
 			}
@@ -597,24 +597,6 @@
 						.on(EV_CL, pronostico)
 				)
 			);
-		}
-
-		function buscar (loc) {
-			if (loc.length > 1) {
-				//	TODO Lanzar consulta
-			}
-			var $ul = $("ul");
-			$ul.empty();
-			var resultados = [{"n": "Loc1", "c": []}, {"n": "Localización 2", "c": []}, {"n": "Loc-3", "c": []}];
-			for (let result of resultados) {
-				$ul.append(
-					$("<li>")
-						.html(result.n)
-						.on(EV_CL, function () {
-							addLocalizacion(result);
-						})
-				);
-			}
 		}
 	</script>
 </body>
