@@ -352,10 +352,10 @@
 
 		function getUrlData (url, src) {
 			return new Promise(function (resolve, reject) {
-				if (location.protocol === "file:") {
-					resolve(jsonPrueba);
-					return;
-				}
+				// if (location.protocol === "file:") {
+				// 	resolve(jsonPrueba);
+				// 	return;
+				// }
 				var cdata = sessionStorage[url];
 				if (cdata && JSON.parse(cdata).tscache + 600000 > Date.now()) {
 					resolve(JSON.parse(cdata));
@@ -576,13 +576,13 @@
 				"k": 306471
 			}];
 
-			let localizaciones = localStorage.getItem("almacenIF");
-			if (localizaciones === null) {
-				localizaciones = await $.getJSON("https://pastebin.com/raw/fxZzPxb0");
-				localStorage.setitem("almacenIF", JSON.stringify(localizaciones));
-			} else {
-				localizaciones = JSON.parse(localizaciones);
-			}
+			// let localizaciones = localStorage.getItem("almacenIF");
+			// if (localizaciones === null) {
+			// 	localizaciones = await $.getJSON("https://pastebin.com/raw/fxZzPxb0");
+			// 	localStorage.setitem("almacenIF", JSON.stringify(localizaciones));
+			// } else {
+			// 	localizaciones = JSON.parse(localizaciones);
+			// }
 			for (const loc of localizaciones) {
 				addLocalizacion(loc);
 			}
