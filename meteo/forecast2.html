@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pronóstico</title>
+    <style>
+        body {
+            background-color: #0a2658;
+        }
+
+        nav {
+            margin: 1rem auto;
+            text-align: center;
+        }
+
+        nav > * {
+            margin: .15rem;
+        }
+
+        nav > .on {
+            background-color: #61e661;
+        }
+
+        .display {
+            overflow-x: auto;
+            background-color: #ccc;
+        }
+
+        .bloque {
+            margin: .5rem;
+        }
+
+        h3 {
+            position: absolute;
+            margin: 0;
+            font-size: small;
+            opacity: .4;
+        }
+
+        .container {
+            padding-top: .75rem;
+            display: flex;
+        }
+
+        .container > div {
+            flex: 0 0 2rem;
+            height: 2rem;
+            margin-right: .10rem;
+            font-size: x-small;
+            text-align: center;
+            line-height: 2rem;
+            overflow: hidden;
+        }
+
+        .separador {
+            border-left: 1px solid;
+        }
+
+        .container.reducido {
+            padding: 0 .5rem;
+        }
+
+        .container.ajustado > div {
+            height: initial;
+            line-height: initial;
+        }
+
+        .container.rotar > div > span {
+            display: inline-block;
+            transform: rotate(-90deg);
+        }
+
+        .toast {
+			display: none;
+			position: fixed;
+			bottom: 1rem;
+			left: 5%;
+			right: 5%;
+			border-radius: 1rem;
+			background-color: #c6ebfa;
+			border: 1px solid #111;
+			color: #414141;
+			text-align: center;
+            padding: .15rem;
+		}
+
+		.toast.on {
+			display: block;
+		}
+    </style>
+    <script src="jquery-3.1.1.min.js"></script>
+</head>
+<body>
+    <nav class="fuentes"></nav>
+	<div class="toast"></div>
+
+    <div class="display">
+        <div class="bloque">
+            <div class="container ajustado fecha" data-plano="1"></div>
+            <div class="container ajustado hora" data-escala="hora"></div>
+            <div class="container ajustado rotar estado" data-span="1" data-plano="1"></div>
+        </div>
+
+        <div class="bloque">
+            <h3>Temperatura (ºC)</h3>
+            <div class="container temperatura" data-min="0" data-max="30" data-escala="temperatura"></div>
+        </div>
+        
+        <div class="bloque">
+            <h3>Nubosidad (%)</h3>
+            <div class="container nubosidad" data-min="0" data-max="100" data-escala="nubosidad"></div>
+        </div>
+        
+        <div class="bloque">
+            <h3>Precipitación (mm)</h3>
+            <div class="container lluvia" data-min="0" data-max="3" data-escala="lluvia"></div>
+        </div>
+        
+        <div class="bloque">
+            <h3>Humedad (%)</h3>
+            <div class="container humedad" data-min="0" data-max="100" data-escala="humedad"></div>
+        </div>
+        
+        <div class="bloque">
+            <h3>Presión (hPa)</h3>
+            <div class="container presion" data-min="985" data-max="1020"></div>
+        </div>
+        
+        <div class="bloque">
+            <h3>Viento (Km/H)</h3>
+            <div class="container viento" data-min="0" data-max="25" data-escala="viento"></div>
+        </div>
+        
+        <div class="bloque">
+            <h3>Dirección (º)</h3>
+            <div class="container direccion" data-min="0" data-max="360"></div>
+        </div>
+        
+        <div class="bloque">
+            <h3>Racha (Km/H)</h3>
+            <div class="container racha" data-min="0" data-max="60" data-escala="viento"></div>
+        </div>
+        
+    </div>
+    <script>
+        const ARR_D100 = [0,10,20,30,40,50,60,70,80,90,100];
+        const ESCALAS = {
+            hora: {
+                val: [0, 6, 9, 12, 15, 18, 21],
+                col: ["#34343466", "#a97e2b66", "#e3d14866", "#ffff0066", "#fb801266", "#b96f6f66", "#434e8966"]
+            },
+			temperatura: {
+				val: [-99,-50,-40,-35,-30,-28,-26,-24,-22,-20,-18,-16,-14,-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50],
+				col: ["#640050","#730064","#820078","#91008c","#a01ea0","#aa2daf","#b446be","#aa4bc3","#a050c8","#9646cd","#8c3cd2","#8232d7","#7828dc","#6e1ee1","#326ecd","#4682d7","#5a96e1","#6eaaeb","#64b9f5","#50be82","#5ac832","#6ed73c","#82e646","#96f05a","#ffff64","#fffa50","#fff03c","#ffdc32","#ffc832","#ffb432","#ffa000","#ff8c00","#ff7800","#ff6900","#f03c14","#dc3c14","#c81e0f","#b4000f","#a0000f","#82001e","#a00546","#c80a64","#dc3282","#f064a0","#ff82be"]
+			},
+			nubosidad: {
+				val: ARR_D100,
+				col: ["#fff","#F0F0F5","#E0E0EB","#D1D1E0","#C2C2D6","#B2B2CC","#A3A3C2","#9494B8","#8585AD","#7575A3","#666699"]
+			},
+			lluvia: {
+				val: [0,1,2,4,6,8,10,12,14,16,20,26,35,43,51,65,75,85,95,105,115],
+				col: ["#ccffff","#c7f7ff","#c2f0ff","#bde8ff","#b8e0ff","#b2d9ff","#add1ff","#a8c9ff","#a3c2ff","#9ebaff","#99b2ff","#94abff","#8fa3ff","#8a9cff","#8594ff","#808cff","#7a85ff","#757dff","#7075ff","#6b6eff","#6666ff"]
+			},
+			humedad: {
+				val: ARR_D100,
+				col: ["#EBEBFF","#D6D6FF","#C2C2FF","#ADADFF","#9999FF","#8585FF","#7070FF","#5C5CFF","#4747FF","#3333FF"]
+			},
+			viento: {
+				val: [0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110],
+				col: ["#ccffcc","#c2f5c2","#b8ebb8","#ade0ad","#a3d6a3","#99cc99","#8fc28f","#85b885","#7aad7a","#70a370","#669966","#5c8f5c","#528552","#477a47","#3d703d","#336633","#295c29","#1f521f","#144714","#0a3d0a","#003300"]
+			}
+		};
+
+        const pronostico = {
+            fecha: [],
+            dia: [],
+            hora: [],
+            temperatura: [],
+            nubosidad: [],
+            lluvia: [],
+            humedad: [],
+            presion: [],
+            viento: [],
+            direccion: [],
+            racha: [],
+            radiacion: [],
+            estado: []
+        };
+
+        let toastTimer;
+
+        function getFromEscala (escala, valor) {
+			var i = 0;
+			while (i < escala.val.length - 1) {
+				if (escala.val[i] <= valor && valor < escala.val[i + 1]) {
+					return escala.col[i];
+				}
+				i++;
+			}
+			return escala.col[escala.col.length - 1];
+		}
+
+        (function crearLocalizaciones () {
+			const LOCALIZACIONES = [{
+				"n": "Geolocalización"
+			},
+			{
+				"n": "Zizurkil",
+				"c": [43.193777,-2.058095]
+			},
+			{
+				"n": "Mambrillas de Lara",
+				"c": [42.094992,-3.460735]
+			},
+			{
+				"n": "Santa Pola",
+				"c": [38.194851,-0.569823]
+			}];
+
+            for (const localizacion of LOCALIZACIONES) {
+                const $boton = $(`<button>`);
+                $boton.html(localizacion.n);
+                $boton.data("coord", localizacion.c)
+                $boton.on("click", async (e) => {
+                    const $boton = $(e.target);
+                    reset();
+                    await obtenerPronosticoRaw($boton.data("coord"));
+                    cargarPronostico();
+                    $("nav > .on").removeClass("on");
+                    $boton.addClass("on");
+
+                });
+                $("nav").append($boton);
+            }
+        }());
+
+        function geolocalizar () {
+            return new Promise(function (resolve, reject) {
+				navigator.geolocation.getCurrentPosition(p => {
+					resolve([p.coords.latitude, p.coords.longitude]);
+				}, err => {
+					reject(err);
+				}, {
+					enableHighAccuracy: true,
+					timeout: 10000,
+					maximumAge: 0
+				});
+			});
+        }
+
+        function mostrarMensaje (txt, info) {
+			console.error(txt, info);
+			clearTimeout(toastTimer);
+			$(".toast")
+				.addClass("on")
+				.html(txt);
+			toastTimer = setTimeout(function () {
+				$(".toast").removeClass("on");
+			}, 7500);
+		}
+
+        async function getData (url) {
+            let cache = localStorage[url];
+            if (cache) {
+                cache = JSON.parse(cache);
+                if (cache.tscache + 600000 > Date.now()) {
+                    return cache;
+                }
+            }
+            const response = await fetch(url);
+            const data = await response.json();
+            data.tscache = Date.now();
+            localStorage[url] = JSON.stringify(data);
+        }
+
+        async function obtenerPronosticoRaw (coordenadas) {
+            if (!coordenadas) {
+                try {
+                    coordenadas = await geolocalizar();
+                } catch (err) {
+                    mostrarMensaje("Error de geolocalización", err);
+                    return;
+                }
+            }
+            let api = "https://api.openweathermap.org/data/2.5/forecast?lat=#&lon=#&lang=es&units=metric&APPID=e3993f2ed6f2dd3b82764b0fc55d3f2c";
+            api = api.replace("#", coordenadas[0].toFixed(3));
+			api = api.replace("#", coordenadas[1].toFixed(3));
+
+            try {
+                const json = await getData(api);
+                json.list.forEach(el => {
+                    const date = new Date(el.dt * 1000);
+                    pronostico.fecha.push(date.getDate() + "/" + (date.getMonth() + 1));
+                    pronostico.dia.push(date.getDate());
+                    pronostico.hora.push(date.getHours());
+                    pronostico.temperatura.push(parseFloat(el.main.temp).toFixed(1));
+                    pronostico.presion.push(el.main.pressure);
+                    pronostico.humedad.push(el.main.humidity);
+                    pronostico.nubosidad.push(el.clouds.all || 0);
+                    let lluvia = 0.0;
+                    if (el.rain && el.rain["1h"]) {
+                        lluvia = el.rain["1h"];
+                    } else if (el.rain && el.rain["3h"]) {
+                        lluvia = el.rain["3h"];
+                    }
+                    if (el.snow && el.snow["1h"]) {
+                        lluvia += el.snow["1h"];
+                    } else if (el.snow && el.snow["3h"]) {
+                        lluvia += el.snow["3h"];
+                    }
+                    pronostico.lluvia.push(lluvia);
+                    pronostico.viento.push(parseFloat(el.wind.speed * 3.6).toFixed(1));
+                    pronostico.direccion.push(el.wind.deg);
+                    pronostico.racha.push(parseFloat(el.wind.gust * 3.6).toFixed(1));
+                    pronostico.estado.push(el.weather[0].description)
+                });
+            } catch (err) {
+                mostrarMensaje("Error al cargar pronóstico", err);
+            }
+        }
+
+        function reset () {
+            $(".container").empty();
+            for (const key of Object.keys(pronostico)) {
+                pronostico[key] = [];
+            }
+        }
+
+        function cargarPronostico () {
+            for (const key of Object.keys(pronostico)) {
+                const $container = $(".container." + key);
+                const max = parseInt($container.data("max"));
+                const min = parseInt($container.data("min"));
+                const escala = $container.data("escala");
+                const span = 1 === $container.data("span");
+                const plano = 1 === $container.data("plano");
+                let dia = pronostico.dia[0];
+                let i = 0;
+                for (let valor of pronostico[key]) {
+                    let style = "";
+                    let color = "#685fff";
+                    if (escala) {
+                        color = getFromEscala(ESCALAS[escala], valor);
+                    }
+                    if (plano) {
+                        style = "";
+                    } else if (!isNaN(max) && !isNaN(min)) {
+                        let porcentaje = parseInt((valor - min) * 100 / (max - min));
+                        if (porcentaje < 2) {
+                            porcentaje = 2;
+                        }
+                        style = `background: linear-gradient(0deg, ${color} 0%, ${color} ${porcentaje - 1}%, #00000000 ${porcentaje}%)`;
+                    } else if (color) {
+                        style = `background: ${color}`;
+                    }
+                    if (span) {
+                        valor = `<span>${valor}</span>`;
+                    }
+                    let clase = "";
+                    if (pronostico.dia[i] !== dia) {
+                        clase = ` class="separador"`;
+                    }
+                    $container.append(`<div style="${style}"${clase}>${valor}</div>`);
+                    dia = pronostico.dia[i];
+                    i++;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
