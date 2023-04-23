@@ -148,8 +148,8 @@
         const ARR_D100 = [0,10,20,30,40,50,60,70,80,90,100];
         const ESCALAS = {
             hora: {
-                val: [0, 6, 9, 12, 15, 18, 21],
-                col: ["#34343466", "#a97e2b66", "#e3d14866", "#ffff0066", "#fb801266", "#b96f6f66", "#434e8966"]
+                val: [0, 6, 9, 12, 15, 16, 18, 21],
+                col: ["#ffff0000", "#ffff0055", "#ffff0080", "#ffff0099", "#ffff0080", "#ffff0070", "#ffff0050", "#ffff0025"]
             },
 			temperatura: {
 				val: [-99,-50,-40,-35,-30,-28,-26,-24,-22,-20,-18,-16,-14,-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50],
@@ -273,6 +273,7 @@
             const data = await response.json();
             data.tscache = Date.now();
             localStorage[url] = JSON.stringify(data);
+            return data;
         }
 
         async function obtenerPronosticoRaw (coordenadas) {
@@ -281,7 +282,7 @@
                     coordenadas = await geolocalizar();
                 } catch (err) {
                     mostrarMensaje("Error de geolocalización", err);
-                    return;
+                    return false;
                 }
             }
             let api = "https://api.openweathermap.org/data/2.5/forecast?lat=#&lon=#&lang=es&units=metric&APPID=e3993f2ed6f2dd3b82764b0fc55d3f2c";
@@ -316,9 +317,11 @@
                     pronostico.racha.push(parseFloat(el.wind.gust * 3.6).toFixed(1));
                     pronostico.estado.push(el.weather[0].description)
                 });
+                return true;
             } catch (err) {
                 mostrarMensaje("Error al cargar pronóstico", err);
             }
+            return false;
         }
 
         function reset () {
