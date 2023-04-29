@@ -40,8 +40,11 @@
         }
 
         .container {
-            padding-top: .75rem;
             display: flex;
+        }
+        
+        .container.separar {
+            padding-top: .75rem;
         }
 
         .container > div {
@@ -72,6 +75,19 @@
             transform: rotate(-90deg);
         }
 
+        .fechadata {
+            text-align: right;
+            font-size: small;
+            color: #fff;
+        }
+
+        .opc {
+            margin: 1rem;
+            text-align: center;
+            font-size: small;
+            color: #fff;
+        }
+
         .toast {
 			display: none;
 			position: fixed;
@@ -99,50 +115,55 @@
     <div class="display">
         <div class="bloque">
             <div class="container ajustado fecha" data-plano="1"></div>
+            <div class="container ajustado dia" data-plano="1"></div>
             <div class="container ajustado hora" data-escala="hora"></div>
-            <div class="container ajustado rotar estado" data-span="1" data-plano="1"></div>
+            <div class="container separar ajustado rotar estado" data-span="1" data-plano="1"></div>
         </div>
 
         <div class="bloque">
             <h3>Temperatura (ºC)</h3>
-            <div class="container temperatura" data-min="0" data-max="30" data-escala="temperatura"></div>
+            <div class="container separar temperatura" data-min="0" data-max="30" data-escala="temperatura"></div>
         </div>
         
         <div class="bloque">
             <h3>Nubosidad (%)</h3>
-            <div class="container nubosidad" data-min="0" data-max="100" data-escala="nubosidad"></div>
+            <div class="container separar nubosidad" data-min="0" data-max="100" data-escala="nubosidad"></div>
         </div>
         
         <div class="bloque">
             <h3>Precipitación (mm)</h3>
-            <div class="container lluvia" data-min="0" data-max="3" data-escala="lluvia"></div>
+            <div class="container separar lluvia" data-min="0" data-max="3" data-escala="lluvia"></div>
         </div>
         
         <div class="bloque">
             <h3>Humedad (%)</h3>
-            <div class="container humedad" data-min="0" data-max="100" data-escala="humedad"></div>
+            <div class="container separar humedad" data-min="0" data-max="100" data-escala="humedad"></div>
         </div>
         
         <div class="bloque">
             <h3>Presión (hPa)</h3>
-            <div class="container presion" data-min="985" data-max="1020"></div>
-        </div>
-        
-        <div class="bloque">
-            <h3>Viento (Km/H)</h3>
-            <div class="container viento" data-min="0" data-max="25" data-escala="viento"></div>
-        </div>
-        
-        <div class="bloque">
-            <h3>Dirección (º)</h3>
-            <div class="container direccion" data-min="0" data-max="360"></div>
+            <div class="container separar presion" data-min="985" data-max="1020" data-color="#A9A9F5"></div>
         </div>
         
         <div class="bloque">
             <h3>Racha (Km/H)</h3>
-            <div class="container racha" data-min="0" data-max="60" data-escala="viento"></div>
+            <div class="container separar racha" data-min="0" data-max="60" data-escala="viento"></div>
+        </div>
+
+        <div class="bloque">
+            <h3>Viento (Km/H)</h3>
+            <div class="container separar viento" data-min="0" data-max="25" data-escala="viento"></div>
         </div>
         
+        <div class="bloque">
+            <h3>Dirección (º)</h3>
+            <div class="container separar direccion" data-min="0" data-max="360" data-escala="direccion"></div>
+        </div>
+        
+    </div>
+    <div class="fechadata"></div>
+    <div class="opc">
+        <label><input type="checkbox" name="cache" />Cache</label>
     </div>
     <script>
         const ARR_D100 = [0,10,20,30,40,50,60,70,80,90,100];
@@ -170,8 +191,13 @@
 			viento: {
 				val: [0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100,105,110],
 				col: ["#ccffcc","#c2f5c2","#b8ebb8","#ade0ad","#a3d6a3","#99cc99","#8fc28f","#85b885","#7aad7a","#70a370","#669966","#5c8f5c","#528552","#477a47","#3d703d","#336633","#295c29","#1f521f","#144714","#0a3d0a","#003300"]
-			}
+			},
+            direccion: {
+                val: [0, 45, 135, 225, 260, 315, 360],
+                col: ["#0B2161", "#FFBF00", "#FE2E2E", "#FE642E", "#AC58FA", "#0B2161"]            
+            }
 		};
+        const DIAS = ["D", "L", "M", "X", "J", "V", "S"];
 
         const pronostico = {
             fecha: [],
@@ -265,7 +291,7 @@
             let cache = localStorage[url];
             if (cache) {
                 cache = JSON.parse(cache);
-                if (cache.tscache + 600000 > Date.now()) {
+                if (cache.tscache + 600000 > Date.now() || document.getElementsByName("cache")[0].checked) {
                     return cache;
                 }
             }
@@ -294,7 +320,7 @@
                 json.list.forEach(el => {
                     const date = new Date(el.dt * 1000);
                     pronostico.fecha.push(date.getDate() + "/" + (date.getMonth() + 1));
-                    pronostico.dia.push(date.getDate());
+                    pronostico.dia.push(DIAS[date.getDay()]);
                     pronostico.hora.push(date.getHours());
                     pronostico.temperatura.push(parseFloat(el.main.temp).toFixed(1));
                     pronostico.presion.push(el.main.pressure);
@@ -317,6 +343,7 @@
                     pronostico.racha.push(parseFloat(el.wind.gust * 3.6).toFixed(1));
                     pronostico.estado.push(el.weather[0].description)
                 });
+                $(".fechadata").html(new Date(json.tscache).toLocaleString());
                 return true;
             } catch (err) {
                 mostrarMensaje("Error al cargar pronóstico", err);
@@ -337,13 +364,14 @@
                 const max = parseInt($container.data("max"));
                 const min = parseInt($container.data("min"));
                 const escala = $container.data("escala");
+                const dcolor = $container.data("color");
                 const span = 1 === $container.data("span");
                 const plano = 1 === $container.data("plano");
                 let dia = pronostico.dia[0];
                 let i = 0;
                 for (let valor of pronostico[key]) {
                     let style = "";
-                    let color = "#685fff";
+                    let color = dcolor || "#685fff";
                     if (escala) {
                         color = getFromEscala(ESCALAS[escala], valor);
                     }
