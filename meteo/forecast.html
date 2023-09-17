@@ -331,6 +331,9 @@
 
 		function pronostico (ev) {
 			var $tar = $(ev.target);
+			if ($tar[0].nodeName === "SPAN") {
+				return;
+			}
 			var failFnc = err => {
 				mostrarMensaje("Error en pronostico", err);
 				$tar.addClass(CL_ER);
@@ -350,6 +353,7 @@
 						return;
 					}
 					var $par = $tar.parent();
+					$tar.find("span").html(` (${new Date(d.tscache).toLocaleString()})`);
 					$par.find(".mto").remove();
 					var $mto = $('<div class="mto">');
 					$par.append($mto);
@@ -609,6 +613,7 @@
 						.html(loc.n)
 						.data("c", loc.c)
 						.on(EV_CL, pronostico)
+						.append("<span>")
 				)
 			);
 		}
