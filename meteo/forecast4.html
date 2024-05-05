@@ -160,6 +160,15 @@
 			<div class="bar nubo">
 				<span class="en pc nu">N</span>
 			</div>
+			<div class="bar nuba">
+				<span class="en pc nu">Nb</span>
+			</div>
+			<div class="bar nume">
+				<span class="en pc nu">Nm</span>
+			</div>
+			<div class="bar nual">
+				<span class="en pc nu">Na</span>
+			</div>
 			<div class="bar lluv">
 				<span class="en mm">L</span>
 			</div>
@@ -302,17 +311,16 @@
 				$dia.find(".hora").append(newSpan(formateaDate(d.fech, "HH"), "fe"));
 				$dia.find(".temp").append(newSpan(d.temp));
 				$dia.find(".nubo").append(newSpan(d.nubo));
+				if (d.nuba) $dia.find(".nuba").append(newSpan(d.nuba));
+				if (d.nume) $dia.find(".nume").append(newSpan(d.nume));
+				if (d.nual) $dia.find(".nual").append(newSpan(d.nual));
 				$dia.find(".lluv").append(newSpan(!isNaN(d.prec) ? d.prec.toFixed(1) : ""));
 				$dia.find(".hume").append(newSpan(d.hume));
 				$dia.find(".pres").append(newSpan(d.pres));
-				if (d.rach) {
-					$dia.find(".rach").append(newSpan(d.rach));
-				}
+				if (d.rach) $dia.find(".rach").append(newSpan(d.rach));
 				$dia.find(".vien").append(newSpan(d.vien));
 				$dia.find(".dire").append(newSpan(d.vdir));
-				if (d.uv) {
-					$dia.find(".uv").append(newSpan(d.uv));
-				}
+				if (d.uv) $dia.find(".uv").append(newSpan(d.uv));
 				$dia.find(".esta").append(newSpan(d.text, "tx"));
 			}
 			$mto.find("h4").trigger(EV_CL);
@@ -421,6 +429,9 @@
 			};
 			$mto.find(".temp > span").each((i, el) => addColor(el, ESCALAS.TEMPERATURA));
 			$mto.find(".nubo > span").each((i, el) => addColor(el, ESCALAS.NUBES));
+			$mto.find(".nuba > span").each((i, el) => addColor(el, ESCALAS.NUBES));
+			$mto.find(".nume > span").each((i, el) => addColor(el, ESCALAS.NUBES));
+			$mto.find(".nual > span").each((i, el) => addColor(el, ESCALAS.NUBES));
 			$mto.find(".hume > span").each((i, el) => addColor(el, ESCALAS.HUMEDAD));
 			$mto.find(".rach > span").each((i, el) => addColor(el, ESCALAS.VIENTO));
 			$mto.find(".vien > span").each((i, el) => addColor(el, ESCALAS.VIENTO));
@@ -594,16 +605,16 @@
 					m.fech = new Date(d.time[i] * 1000);
 					m.temp = d.temperature_2m[i].toFixed(1);
 					m.nubo = d.cloud_cover[i];
-					m.nuba = d.cloud_cover_low[i];
-					m.nume = d.cloud_cover_mid[i];
-					m.nual = d.cloud_cover_high[i];
+					m.nuba = d.cloud_cover_low[i].toFixed(0);
+					m.nume = d.cloud_cover_mid[i].toFixed(0);
+					m.nual = d.cloud_cover_high[i].toFixed(0);
 					m.hume = d.relative_humidity_2m[i];
 					m.pres = d.surface_pressure[i].toFixed(0);
 					m.prec = d.precipitation[i];
 					m.vien = d.wind_speed_10m[i].toFixed(1);
 					m.vdir = d.wind_direction_10m[i];
 					m.rach = d.wind_gusts_10m[i];
-					m.uv = d.uv_index[i].toFixed(1);
+					m.uv = d.uv_index[i].toFixed(0);
 					m.text = CODIGOS[d.weather_code[i]] || "---";
 					r.push(m);
 				}
