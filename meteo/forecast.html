@@ -360,84 +360,81 @@
 			$mto.find(".uv").each((i, el) => addColor(el, ESCALAS.RADIACION));
 		}
 
-		function pronostico (ev) {
+		async function pronostico (ev) {
 			var $tar = $(ev.target);
 			if ($tar[0].nodeName === "SPAN") {
 				return;
 			}
-			var failFnc = err => {
-				mostrarMensaje("Error en pronostico", err);
-				$tar.addClass(CL_ER);
-			};
 			$tar.removeClass(`${CL_LD} ${CL_CH} ${CL_ER}`);
-			getPosicion($tar).then(p => {
-				var src = $(".fuentes > button.on").html();
-				var url = getUrl(src, p);
-				$tar.addClass(CL_LD);
-				getUrlData(url, src).then(d => {
-					var data;
-					try {
-						data = Converters[src](d);
-					} catch (err) {
-						mostrarMensaje(`Error converter ${src}`, d);
-						failFnc();
-						return;
-					}
-					var $par = $tar.parent();
-					$tar.find("span").html(` (${new Date(d.tscache).toLocaleString()})`);
-					$par.find(".mto").remove();
-					var $mto = $('<div class="mto">');
-					$par.append($mto);
-					cargarPrediccion($mto, data);
-					calcularResumenes($mto);
-					colorearValores($mto);
-					$tar.removeClass(CL_LD);
-					$tar.toggleClass(CL_CH, Number.isInteger(d.tscache));
-				}, failFnc);
-			}, failFnc);
+			const p = await getPosicion($tar);
+			var src = $(".fuentes > button.on").html();
+			var url = getUrl(src, p);
+			$tar.addClass(CL_LD);
+			
+			const d = await getUrlData(url, src);
+			var data;
+			try {
+				data = Converters[src](d);
+			} catch (err) {
+				mostrarMensaje(`Error converter ${src}`, d);
+				return;
+			}
+			var $par = $tar.parent();
+			$tar.find("span").html(` (${new Date(d.tscache).toLocaleString()})`);
+			$par.find(".mto").remove();
+			var $mto = $('<div class="mto">');
+			$par.append($mto);
+			cargarPrediccion($mto, data);
+			calcularResumenes($mto);
+			colorearValores($mto);
+			$tar.removeClass(CL_LD);
+			$tar.toggleClass(CL_CH, Number.isInteger(d.tscache));
 		}
 
-		function getUrlData (url, src) {
-			return new Promise(function (resolve, reject) {
-				// if (location.protocol === "file:") {
-				// 	resolve(jsonPrueba);
-				// 	return;
-				// }
-				var cdata = sessionStorage[url];
-				if (cdata && JSON.parse(cdata).tscache + 600000 > Date.now()) {
-					resolve(JSON.parse(cdata));
-				} else {
-					$.ajax(url).done(data => {
-						data.tscache = Date.now();
-						sessionStorage[url] = JSON.stringify(data);
-						resolve(data);
-					}).fail(err => {
-						reject(err);	
-					});
+		async function getUrlData (url, src) {
+			const cdata = sessionStorage[url];
+			if (cdata && JSON.parse(cdata).tscache + 600000 > Date.now()) {
+				return JSON.parse(cdata);
+			}
+			try {
+				const response = await fetch(url);
+				const data = await response.json();
+				data.tscache = Date.now();
+				sessionStorage[url] = JSON.stringify(data);
+				return data;
+			} catch (err) {
+				mostrarMensaje("Error al obtener pronóstico", err);
+				if (cdata) {
+					return JSON.parse(cdata);
 				}
-			});
+				throw err;
+			}
 		}
 		
-		function getPosicion ($tar) {
-			return new Promise(function (resolve, reject) {
-				if ($tar) {
-					var coords = $tar.data("c");
-					if (coords) {
-						resolve(coords);
-						return;
-					}
+		async function getPosicion ($tar) {
+			function getPosition(options) {
+				return new Promise((resolve, reject) => 
+					navigator.geolocation.getCurrentPosition(resolve, reject, options)
+				);
+			}
+
+			if ($tar) {
+				var coords = $tar.data("c");
+				if (coords) {
+					return coords;
 				}
-				navigator.geolocation.getCurrentPosition(p => {
-					resolve([p.coords.latitude, p.coords.longitude]);
-				}, err => {
-					mostrarMensaje("Error de geolocalización", err);
-					reject(err);
-				}, {
+			}
+			try {
+				const p = await getPosition({
 					enableHighAccuracy: true,
 					timeout: 10000,
 					maximumAge: 0
 				});
-			});
+				return [p.coords.latitude, p.coords.longitude];
+			} catch (err) {
+				mostrarMensaje("Error de geolocalización", err);
+				throw err;
+			}
 		}
 
 		var toastTimer = null;
