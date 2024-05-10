@@ -238,7 +238,7 @@
 				}
 				$mto.append(
 					$("<div>")
-						.append(newSpan(formateaDate(d.fech, "HH"), "fe"))
+						.append(newSpan(formateaDate(d.fech, "HHMM"), "fe"))
 						.append(newSpan(d.temp, "tc"))
 						.append(newSpan(d.nubo, "pc nu"))
 						.append(newSpan(d.prec.toFixed(1), "mm"))
@@ -376,7 +376,8 @@
 			try {
 				data = Converters[src](d);
 			} catch (err) {
-				mostrarMensaje(`Error converter ${src}`, d);
+				console.error(err);
+				mostrarMensaje(`Error converter ${src}: ${err.message}`, d);
 				return;
 			}
 			var $par = $tar.parent();
@@ -439,8 +440,7 @@
 
 		var toastTimer = null;
 
-		function mostrarMensaje (txt, info) {
-			console.error(txt, info);
+		function mostrarMensaje (txt) {
 			clearTimeout(toastTimer);
 			$(".toast")
 				.addClass(CL_ON)
@@ -459,12 +459,20 @@
 		}
 
 		function formateaDate (fecha, formato) {
+			const dobleDigito = (val) => {
+				if (val < 10) {
+					return `0${val}`;
+				}
+				return val;
+			};
 			const dias = ["D", "L", "M", "X", "J", "V", "S"];
 			switch (formato) {
 				case "HH":
-					return fecha.getHours() < 10 ? "0" + fecha.getHours() : fecha.getHours();
+					return dobleDigito(fecha.getHours());
 				case "DDS":
 					return `${fecha.getDate()} ${dias[fecha.getDay()]}`;
+				case "HHMM":
+					return `${dobleDigito(fecha.getHours())}:${dobleDigito(fecha.getMinutes())}`;
 				default:
 					return `${fecha.getDate()}/${fecha.getMonth() + 1} ${dias[fecha.getDay()]}`;
 			}
@@ -478,37 +486,59 @@
 		}
 
 		const Sources = {
-			"open-meteo": "https://api.open-meteo.com/v1/forecast?latitude=#&longitude=#&hourly=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,surface_pressure,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index&timeformat=unixtime&timezone=auto&forecast_days=16",
+			"open-meteo-16": "https://api.open-meteo.com/v1/forecast?latitude=#&longitude=#&hourly=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,surface_pressure,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index&timeformat=unixtime&timezone=auto&forecast_days=16",
+			"open-meteo-ARO": "https://api.open-meteo.com/v1/forecast?latitude=#&longitude=#&minutely_15=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,visibility,cape&models=meteofrance_arome_france_hd&timeformat=unixtime",
+			"open-meteo-ARP": "https://api.open-meteo.com/v1/forecast?latitude=#&longitude=#&minutely_15=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,visibility,cape&models=meteofrance_arpege_europe&timeformat=unixtime",
 			"openweathermap3": "https://api.openweathermap.org/data/2.5/forecast?lat=#&lon=#&lang=es&units=metric&APPID=e3993f2ed6f2dd3b82764b0fc55d3f2c",
 			"openweathermap": "https://api.openweathermap.org/data/2.5/onecall?lat=#&lon=#&lang=es&cnt=1&units=metric&APPID=e3993f2ed6f2dd3b82764b0fc55d3f2c",
 			"met.no": "https://api.met.no/weatherapi/locationforecast/1.9/?lat=#&lon=#",
 			"darksky": "https://api.darksky.net/forecast/a48eb522ce6b50ffcb1b69cf4655c8eb/#,#?units=si&lang=es"
 		};
 
+		const normalizar = (propiedad, indice, decimales) => {
+			const defecto = decimales !== null ? 0 : "";
+			if (!propiedad) {
+				return defecto;
+			}
+			const val = propiedad[indice];
+			if (!val) {
+				return defecto;
+			} else if (decimales !== null && typeof val === "number") {
+				return +val.toFixed(decimales || 0);
+			} else {
+				return val;
+			}
+		};
+
+		const openMeteoConverter = (data) => {
+			var r = [];
+			var d = data.hourly || data.minutely_15;
+			for (var i = 0; i < d.time.length; i++) {
+				var m = {};
+				m.fech = new Date(normalizar(d.time, i) * 1000);
+				m.temp = normalizar(d.apparent_temperature, i, 1);
+				m.nubo = normalizar(d.cloud_cover, i);
+				m.nuba = normalizar(d.cloud_cover_low, i);
+				m.nume = normalizar(d.cloud_cover_mid, i);
+				m.nual = normalizar(d.cloud_cover_high, i);
+				m.hume = normalizar(d.relative_humidity_2m, i);
+				m.pres = normalizar(d.surface_pressure, i, 0);
+				m.prec = normalizar(d.precipitation, i, 1);
+				m.vien = normalizar(d.wind_speed_10m, i, 1);
+				m.vdir = normalizar(d.wind_direction_10m, i);
+				m.rach = normalizar(d.wind_gusts_10m, i);
+				m.uv = normalizar(d.uv_index, i, 1);
+				m.text = CODIGOS[normalizar(d.weather_code, i)] || "---";
+				r.push(m);
+			}
+			console.log("openMeteoConverter", r);
+			return r;
+		};
+
 		var Converters = {
-			"open-meteo": function (data)  {
-				var r = [];
-				var d = data.hourly;
-				for (var i = 0; i < d.time.length; i++) {
-					var m = {};
-					m.fech = new Date(d.time[i] * 1000);
-					m.temp = d.temperature_2m[i].toFixed(1);
-					m.nubo = d.cloud_cover[i];
-					m.nuba = d.cloud_cover_low[i];
-					m.nume = d.cloud_cover_mid[i];
-					m.nual = d.cloud_cover_high[i];
-					m.hume = d.relative_humidity_2m[i];
-					m.pres = d.surface_pressure[i].toFixed(0);
-					m.prec = d.precipitation[i];
-					m.vien = d.wind_speed_10m[i].toFixed(1);
-					m.vdir = d.wind_direction_10m[i];
-					m.rach = d.wind_gusts_10m[i];
-					m.uv = d.uv_index[i].toFixed(1);
-					m.text = CODIGOS[d.weather_code[i]] || "---";
-					r.push(m);
-				}
-				return r;
-			},
+			"open-meteo-16": openMeteoConverter,
+			"open-meteo-ARO": openMeteoConverter,
+			"open-meteo-ARP": openMeteoConverter,
 			"wunderground": function (data) {
 				var r = [];
 				data = data.hourly_forecast;
