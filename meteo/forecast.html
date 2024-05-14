@@ -81,10 +81,6 @@
 		h4 > .fe { width: 2rem; }
 		div > .fe { width: 1rem; }
 
-		@media (max-width: 420px) {
-			.pres { display: none; }
-		}
-
 		.on { background-color: lime; }
 		.ld { background-color: gold; }
 		.er { background-color: red; }
@@ -169,8 +165,8 @@
 						.append(newSpan(d.hume, "pc hume"))
 						.append(newSpan(d.pres, "pres"))
 						.append(newSpan(d.vien, "vien"))
-						.append(`<span class="dire" style="transform: rotate(${d.vdir}deg);" data-deg="${d.vdir}"></span>`)
-						.append(newSpan(d.radi, "uv"))
+						.append(newSpan(d.vdir, "dire"))
+						.append(newSpan(d.uv, "uv"))
 						.append(newSpan(d.text, "tx"))
 				);
 			}
