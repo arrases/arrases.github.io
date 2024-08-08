@@ -339,12 +339,14 @@ function newSpan (contenido, clase) {
     var keys = Object.keys(Sources);
     for (var i = 0; i < keys.length; i++) {
         var $b = $(`<button>${keys[i]}</button>`);
+        var activesrc = localStorage.getItem("almfor.activesrc");
         $b.on(EV_CL, function elegirFuente (e) {
             var $este = $(e.target);
             $este.parent().children().removeClass(CL_ON);
             $este.addClass(CL_ON);
+            localStorage.setItem("almfor.activesrc", $este[0].innerHTML);
         });
-        if (i === 0) {
+        if ((activesrc && activesrc === keys[i]) || (!activesrc && i === 0)) {
             $b.addClass(CL_ON);
         }
         $(".fuentes").append($b);
