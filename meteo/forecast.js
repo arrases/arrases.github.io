@@ -356,30 +356,8 @@ function newSpan (contenido, clase) {
 (function crearLocalizaciones () {
     var localizaciones = [{
         "n": "Geolocalización"
-    },
-    {
-        "n": "Zizurkil",
-        "c": [43.193777,-2.058095],
-        "k": 2323930
-    },
-    {
-        "n": "Mambrillas de Lara",
-        "c": [42.094992,-3.460735],
-        "k": 1457401
-    },
-    {
-        "n": "Santa Pola",
-        "c": [38.194851,-0.569823],
-        "k": 306471
-    }];
-
-    // let localizaciones = localStorage.getItem("almacenIF");
-    // if (localizaciones === null) {
-    // 	localizaciones = await $.getJSON("https://pastebin.com/raw/fxZzPxb0");
-    // 	localStorage.setitem("almacenIF", JSON.stringify(localizaciones));
-    // } else {
-    // 	localizaciones = JSON.parse(localizaciones);
-    // }
+    }]
+    localizaciones = localizaciones.concat(JSON.parse(localStorage.getItem("almiji.locations") || "[]"));
 
     function addLocalizacion (loc) {
         $("body").append(
