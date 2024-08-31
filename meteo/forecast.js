@@ -152,7 +152,7 @@ function getUrl (src, coords) {
 
 async function getUrlData (url) {
     const cdata = sessionStorage[url];
-    if (cdata && JSON.parse(cdata).tscache + 600000 > Date.now()) {
+    if (cdata && (JSON.parse(cdata).tscache + 600000 > Date.now() || $("footer > .cache").hasClass(CL_ON))) {
         return JSON.parse(cdata);
     }
     try {
@@ -360,12 +360,12 @@ function newSpan (contenido, clase) {
     localizaciones = localizaciones.concat(JSON.parse(localStorage.getItem("almiji.locations") || "[]"));
 
     function addLocalizacion (loc) {
-        $("body").append(
-            $("<div class='ubicacion'>").append(
+        $("main").append(
+            $('<div class="ubicacion">').append(
                 $("<a>")
                     .html(loc.n)
                     .data("c", loc.c)
-                    .append("<span>")
+                    .append("<time>")
             )
         );
     }
@@ -375,6 +375,19 @@ function newSpan (contenido, clase) {
     }
 }());
 
+(function loadCache () {
+    $("footer > .cache").on(EV_CL, (e) => {
+        const ison = $($(e.target).toggleClass(CL_ON)[0]).hasClass(CL_ON);
+        localStorage.setItem("almfor.cacheon", ison);
+    });
+    $("footer > .cache").toggleClass(CL_ON, localStorage.getItem("almfor.cacheon") === "true");
+}());
+
+$("footer > .ubicaciones").on(EV_CL, (e) => {
+    window.location = "ubicaciones.html";
+});
+
+let ultimaPosicion;
 async function getPosicion ($tar) {
     function getPosition(options) {
         return new Promise((resolve, reject) => 
@@ -389,12 +402,12 @@ async function getPosicion ($tar) {
         }
     }
     try {
-        const p = await getPosition({
+        ultimaPosicion = ultimaPosicion || await getPosition({
             enableHighAccuracy: true,
             timeout: 10000,
             maximumAge: 0
         });
-        return [p.coords.latitude, p.coords.longitude];
+        return [ultimaPosicion.coords.latitude, ultimaPosicion.coords.longitude];
     } catch (err) {
         mostrarMensaje("Error de geolocalización", err);
         throw err;

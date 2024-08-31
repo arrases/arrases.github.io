@@ -17,9 +17,12 @@
             margin-top: 0;
         }
 
-        section {
+        body > * {
             max-width: 25rem;
-            margin: 1rem auto;
+            margin: 1rem auto 0;
+        }
+
+        section {
             padding: 1rem;
             border-radius: .5rem;
             border: 1px solid #ccc;
@@ -46,6 +49,11 @@
         #sugerencias>li:nth-child(2n) {
             background-color: #f1f1f1;
         }
+
+        footer {
+            font-size: small;
+            text-align: right;
+        }
     </style>
 </head>
 
@@ -66,6 +74,9 @@
         </nav>
         <ul id="sugerencias"></ul>
     </section>
+    <footer>
+        <a href="#" onclick="history.back()">volver</a>
+    </footer>
 
     <script src="jquery-3.1.1.min.js"></script>
     <script>

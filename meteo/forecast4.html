@@ -17,7 +17,7 @@
 			background-color: #0a2658;
 		}
 
-		body > div {
+		.ubicacion {
 			display: inline-block;
 			margin: .4rem;
 			padding: .3rem;
@@ -26,10 +26,15 @@
 			background-color: #ccc;
 		}
 
-		body > div > a {
+		.ubicacion > a {
 			display: block;
 			text-align: center;
 			cursor: pointer;
+		}
+
+		time {
+			font-size: small;
+			color: #888;
 		}
 
 		.mto {
@@ -93,7 +98,6 @@
 		.on { background-color: lime; }
 		.ld { background-color: gold; }
 		.er { background-color: red; }
-		.ch { color: #888; }
 
 		button {
 			border: 1px solid #4b4b4b;
@@ -122,6 +126,7 @@
 			bottom: 1rem;
 			left: 5%;
 			right: 5%;
+			padding: .25rem;
 			border-radius: 1rem;
 			background-color: #333;
 			border: 1px solid #111;
@@ -201,6 +206,11 @@
 	</templates>
 
 	<nav class="fuentes"></nav>
+	<main></main>
+	<footer>
+		<button class="cache">Cache</button>
+		<button class="ubicaciones">Ubicaciones</button>
+	</footer>
 	<div class="toast"></div>
 	<script src="jquery-3.1.1.min.js"></script>
 	<script src="forecast.js"></script>
@@ -273,7 +283,7 @@
 						return;
 					}
 					var $par = $tar.parent();
-					$tar.find("span").html(` (${new Date(d.tscache).toLocaleString()})`);
+					$tar.find("time").html(` (${new Date(d.tscache).toLocaleString()})`);
 					$par.find(".mto,.meteo").remove();
 					var $mto = $('<div class="mto">');
 					$par.append($mto);
