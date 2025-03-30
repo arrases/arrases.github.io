@@ -101,7 +101,7 @@
             const idt = `ckbx-${Math.floor(Math.random() * 26) + Date.now()}${id++}`;
             return $("<li>")
                 .data(data)
-                .append(`<input type="checkbox" id="${idt}" /><label for="${idt}">${data.n} [${data.c}] (${data.e}m)</label>`);
+                .append(`<input type="checkbox" id="${idt}" /><label for="${idt}">${data.n} [${data.c}] (${data.e || "-"} m)</label>`);
         }
 
         function guardarUbicaciones() {
@@ -124,7 +124,7 @@
                 }
                 $("#sugerencias").empty();
                 for (const feature of resultado.features) {
-                    if (!["city", "town", "village"].includes(feature.properties.addresstype)) {
+                    if (!["city", "town", "village", "locality", "neighbourhood", "road", "peak"].includes(feature.properties.addresstype)) {
                         continue;
                     }
                     const $li = $("<li>")
@@ -132,7 +132,7 @@
                         .data({
                             "n": feature.properties.name,
                             "c": `${feature.geometry.coordinates[1].toFixed(6)},${feature.geometry.coordinates[0].toFixed(6)}`,
-                            "e": feature.properties.extratags.ele,
+                            "e": feature.properties?.extratags?.ele ?? null,
                         })
                         .on("click", (e) => {
                             const $li = $(e.target);
