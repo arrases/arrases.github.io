@@ -93,23 +93,20 @@
             $("#ubicaciones > li").remove();
             const ubicaciones = JSON.parse(localStorage.getItem(STORAGEKEY) || "[]");
             for (const ubicacion of ubicaciones) {
-                $("#ubicaciones").append(crearUbicacion(ubicacion.n, ubicacion.c));
+                $("#ubicaciones").append(crearUbicacion(ubicacion));
             }
         }
 
-        function crearUbicacion(nombre, coordenadas) {
+        function crearUbicacion(data) {
             const idt = `ckbx-${Math.floor(Math.random() * 26) + Date.now()}${id++}`;
-            return `<li data-c="[${coordenadas}]" data-n="${nombre}"><input type="checkbox" id="${idt}" /><label for="${idt}">${nombre} [${coordenadas}]</label></li>`;
+            return $("<li>")
+                .data(data)
+                .append(`<input type="checkbox" id="${idt}" /><label for="${idt}">${data.n} [${data.c}] (${data.e}m)</label>`);
         }
 
         function guardarUbicaciones() {
             const ubicaciones = [];
-            $("#ubicaciones > li").each((i, e) => {
-                ubicaciones.push({
-                    n: $(e).data("n"),
-                    c: $(e).data("c")
-                });
-            });
+            $("#ubicaciones > li").each( (i, e) => ubicaciones.push($(e).data()) );
             localStorage.setItem(STORAGEKEY, JSON.stringify(ubicaciones));
         }
 
@@ -120,26 +117,33 @@
                 return;
             }
             try {
-                const resultado = await $.getJSON(`https://nominatim.openstreetmap.org/search?q=${termino}&format=geojson`);
+                const resultado = await $.getJSON(`https://nominatim.openstreetmap.org/search?q=${termino}&format=geojson&extratags=1`);
                 if (!resultado || resultado.features.length === 0) {
-                    alert("No hay resultados :()");
+                    alert("No hay resultados :(");
                     return;
                 }
                 $("#sugerencias").empty();
                 for (const feature of resultado.features) {
+                    if (!["city", "town", "village"].includes(feature.properties.addresstype)) {
+                        continue;
+                    }
                     const $li = $("<li>")
                         .append(feature.properties.display_name)
                         .data({
                             "n": feature.properties.name,
-                            "c": `${feature.geometry.coordinates[1].toFixed(6)},${feature.geometry.coordinates[0].toFixed(6)}`
+                            "c": `${feature.geometry.coordinates[1].toFixed(6)},${feature.geometry.coordinates[0].toFixed(6)}`,
+                            "e": feature.properties.extratags.ele,
                         })
                         .on("click", (e) => {
                             const $li = $(e.target);
-                            $("#ubicaciones").append(crearUbicacion($li.data("n"), $li.data("c")));
+                            $("#ubicaciones").append(crearUbicacion($li.data()));
                             guardarUbicaciones();
                         })
                         ;
                     $("#sugerencias").append($li);
+                }
+                if ($("#sugerencias").children().length === 0) {
+                    alert("No hay resultados :(");
                 }
             } catch (err) {
                 console.error("Error en buscar", err);
