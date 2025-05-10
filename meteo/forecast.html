@@ -87,6 +87,9 @@
 			overflow: hidden;
 			font-size: x-small;
 		}
+		.ic {
+			font-size: large;
+		}
 		h4 > .fe { width: 2rem; }
 		div > .fe { width: 1rem; }
 
@@ -173,6 +176,7 @@
 				$mto.append(
 					$("<div>")
 						.append(newSpan(formateaDate(d.fech, "HHMM"), "fe"))
+						.append(newSpan(d.text, "ic"))
 						.append(newSpan(d.temp, "temp"))
 						.append(newSpan(d.nubo, "pc nubo"))
 						.append(newSpan(d.prec.toFixed(1), "lluv mm"))
@@ -180,8 +184,7 @@
 						.append(newSpan(d.pres, "pres"))
 						.append(newSpan(d.vien, "vien"))
 						.append(newSpan(d.vdir, "dire"))
-						.append(newSpan(d.uv, "uv"))
-						.append(newSpan(d.text, "tx"))
+						.append(newSpan(d.radi, "uv"))
 				);
 			}
 			$mto.find("h4").trigger(EV_CL);
@@ -202,39 +205,36 @@
 					return acum[9][0] > acum[9][acum[9].length - 1] ? "-" : "+";
 				}
 				
-				function vientoDireccion () {
-					const DIR = ["N", "E", "S", "W"];
-					acum[10] = acum[10].map(function (dir) {
-						if (0 <= dir && dir < 45) {
-							return "N";
-						} else if (45 <= dir && dir < 135) {
-							return "E";
-						} else if (135 <= dir && dir < 225) {
-							return "S";
-						} else if (225 <= dir && dir < 315) {
-							return "W";
-						} else {
-							return "N";
-						}
-					});
-					acum[10] = [
-						acum[10].filter((val) => { return val === "N"; }).length,
-						acum[10].filter((val) => { return val === "E"; }).length,
-						acum[10].filter((val) => { return val === "S"; }).length,
-						acum[10].filter((val) => { return val === "W"; }).length
-					];
-					let max = 0;
-					let dir = "";
-					for (let i = 0; i < acum[10].length; i++) {
-						if (acum[10][i] === max) {
-							dir += DIR[i];
-						} else if (acum[10][i] > max) {
-							max = acum[10][i];
-							dir = DIR[i];
+				function vientoPredominante(arrayGrados) {
+					function gradosADireccion(grados) {
+						const direcciones = [
+							'N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
+							'S', 'SSO', 'SO', 'OSO', 'O', 'ONO', 'NO', 'NNO'
+						];
+						const index = Math.round(grados / 22.5) % 16;
+						return direcciones[index];
+					}
+
+					const conteo = {};
+
+					for (const grados of arrayGrados) {
+						const direccion = gradosADireccion(grados);
+						conteo[direccion] = (conteo[direccion] || 0) + 1;
+					}
+
+					let maxDireccion = null;
+					let maxConteo = 0;
+
+					for (const [direccion, cantidad] of Object.entries(conteo)) {
+						if (cantidad > maxConteo) {
+							maxDireccion = direccion;
+							maxConteo = cantidad;
 						}
 					}
-					return dir;
+
+					return maxDireccion;
 				}
+
 				$cab
 					.append(newSpan(acum[1], "mx temp"))
 					.append(newSpan((acum[2] / acum[0]).toFixed(1), "md temp"))
@@ -243,7 +243,7 @@
 					.append(newSpan(acum[5].toFixed(1), "mm lluv"))
 					.append(newSpan((acum[7] / acum[0]).toFixed(1), "pc hume"))
 					.append(newSpan(`${presionSigno()}${presionVariacion()}`, "pr uv"))
-					.append(newSpan(vientoDireccion()))
+					.append(newSpan(vientoPredominante(acum[10])))
 					.append(newSpan(acum[6], "vien"))
 					.append(newSpan(acum[8], "uv"))
 				;

@@ -65,6 +65,7 @@
             <button onclick="borrar()">borrar</button>
             <button onclick="mover(true)">subir</button>
             <button onclick="mover(false)">bajar</button>
+            <button onclick="vaciar()">vaciar</button>
         </nav>
 
         <h1>Buscar</h1>
@@ -101,13 +102,30 @@
             const idt = `ckbx-${Math.floor(Math.random() * 26) + Date.now()}${id++}`;
             return $("<li>")
                 .data(data)
-                .append(`<input type="checkbox" id="${idt}" /><label for="${idt}">${data.n} [${data.c}] (${data.e || "-"} m)</label>`);
+                .append($(`<input type="checkbox" id="${idt}">`))
+                .append(
+                    $(`<label for="${idt}">`)
+                        .html(`${data.n} [${data.c}] (${data.e || "-"} m)`)
+                        .on("dblclick", () => {
+                            const $li = $($(event.target).closest("li")); 
+                            let ubicacion = $li.data();
+                            const nuevoNombre = prompt("Nuevo nombre", ubicacion.n) || ubicacion.n;
+                            ubicacion.n = nuevoNombre;
+                            $li.data(ubicacion);
+                            guardarUbicaciones();
+                            cargarUbicaciones();
+                        })
+                );
         }
 
         function guardarUbicaciones() {
             const ubicaciones = [];
             $("#ubicaciones > li").each( (i, e) => ubicaciones.push($(e).data()) );
             localStorage.setItem(STORAGEKEY, JSON.stringify(ubicaciones));
+        }
+
+        function normalizarCoord(val) {
+            return parseFloat(val.toFixed(6));
         }
 
         async function buscar() {
@@ -131,7 +149,7 @@
                         .append(feature.properties.display_name)
                         .data({
                             "n": feature.properties.name,
-                            "c": `${feature.geometry.coordinates[1].toFixed(6)},${feature.geometry.coordinates[0].toFixed(6)}`,
+                            "c": [normalizarCoord(feature.geometry.coordinates[1]), normalizarCoord(feature.geometry.coordinates[0])],
                             "e": feature.properties?.extratags?.ele ?? null,
                         })
                         .on("click", (e) => {
@@ -168,6 +186,11 @@
                     $elem.insertAfter($after);
                 }
             }
+            guardarUbicaciones();
+        }
+
+        function vaciar() {
+            $("#ubicaciones").empty();
             guardarUbicaciones();
         }
 

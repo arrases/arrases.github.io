@@ -4,6 +4,8 @@ const CL_ON = "on",
     CL_CH = "ch",
     EV_CL = "click";
 
+const DECIMALES = 3;
+
 const ARR_D100 = [0,10,20,30,40,50,60,70,80,90,100];
 
 const ESCALAS = {
@@ -41,35 +43,124 @@ const ESCALAS = {
     }
 };
 
-const CODIGOS = {
-	0: "cielo despejado",
-	1: "principalmente despejado",
-	2: "parcialmente nublado",
-	3: "cubierto",
-	45: "niebla ",
-	48: "depósito de niebla de escarcha",
-	51: "llovizna ligera",
-	53: "llovizna moderada",
-	55: "llovizna densa",
-	56: "llovizna helada ligera",
-	57: "llovizna helada densa",
-	61: "lluvia leve",
-	63: "lluvia moderada",
-	65: "lluvia fuerte",
-	66: "lluvia helada ligera",
-	67: "lluvia helada fuerte",
-	71: "nieve leve",
-	73: "nieve moderada",
-	75: "nieve fuerte",
-	77: "granos de nieve",
-	80: "chubasco leve",
-	81: "chubasco moderado",
-	82: "chubasco violento",
-	85: "chubascos de nieve ligeros",
-	86: "chubascos de nieve fuerte",
-	95: "tormenta",
-	96: "tormenta con granizo leve",
-	99: "tormenta con granizo fuerte"
+const CODIGOS_OPENMETEO = {
+    0: { descripcion: "cielo despejado", icono: "☀️" },
+    1: { descripcion: "principalmente despejado", icono: "🌤️" },
+    2: { descripcion: "parcialmente nublado", icono: "⛅" },
+    3: { descripcion: "cubierto", icono: "☁️" },
+    45: { descripcion: "niebla", icono: "🌫️" },
+    48: { descripcion: "depósito de niebla de escarcha", icono: "🌫️❄️" },
+    51: { descripcion: "llovizna ligera", icono: "🌦️" },
+    53: { descripcion: "llovizna moderada", icono: "🌧️" },
+    55: { descripcion: "llovizna densa", icono: "🌧️🌧️" },
+    56: { descripcion: "llovizna helada ligera", icono: "🌧️❄️" },
+    57: { descripcion: "llovizna helada densa", icono: "🌧️❄️❄️" },
+    61: { descripcion: "lluvia leve", icono: "🌦️" },
+    63: { descripcion: "lluvia moderada", icono: "🌧️" },
+    65: { descripcion: "lluvia fuerte", icono: "🌧️🌧️" },
+    66: { descripcion: "lluvia helada ligera", icono: "🌧️❄️" },
+    67: { descripcion: "lluvia helada fuerte", icono: "🌧️❄️❄️" },
+    71: { descripcion: "nieve leve", icono: "🌨️" },
+    73: { descripcion: "nieve moderada", icono: "❄️" },
+    75: { descripcion: "nieve fuerte", icono: "❄️❄️" },
+    77: { descripcion: "granos de nieve", icono: "🌨️❄️" },
+    80: { descripcion: "chubasco leve", icono: "🌦️" },
+    81: { descripcion: "chubasco moderado", icono: "🌧️" },
+    82: { descripcion: "chubasco violento", icono: "⛈️" },
+    85: { descripcion: "chubascos de nieve ligeros", icono: "🌨️" },
+    86: { descripcion: "chubascos de nieve fuerte", icono: "🌨️❄️" },
+    95: { descripcion: "tormenta", icono: "⛈️" },
+    96: { descripcion: "tormenta con granizo leve", icono: "⛈️🌨️" },
+    99: { descripcion: "tormenta con granizo fuerte", icono: "⛈️🌨️🌨️" }
+};
+
+const CODIGOS_OPENWEATHER = {
+    200: { descripcion: "tormenta con lluvia ligera", icono: "⛈️🌦️" },
+    201: { descripcion: "tormenta con lluvia", icono: "⛈️" },
+    202: { descripcion: "tormenta con lluvia fuerte", icono: "⛈️🌧️" },
+    210: { descripcion: "tormenta ligera", icono: "🌩️" },
+    211: { descripcion: "tormenta", icono: "🌩️" },
+    212: { descripcion: "tormenta fuerte", icono: "🌩️⚡" },
+    221: { descripcion: "tormenta irregular", icono: "🌩️🌧️" },
+    230: { descripcion: "tormenta con llovizna ligera", icono: "⛈️🌦️" },
+    231: { descripcion: "tormenta con llovizna", icono: "⛈️" },
+    232: { descripcion: "tormenta con llovizna fuerte", icono: "⛈️🌧️" },
+  
+    300: { descripcion: "llovizna ligera", icono: "🌦️" },
+    301: { descripcion: "llovizna", icono: "🌧️" },
+    302: { descripcion: "llovizna intensa", icono: "🌧️🌧️" },
+    310: { descripcion: "llovizna ligera y lluvia", icono: "🌦️" },
+    311: { descripcion: "llovizna y lluvia", icono: "🌧️" },
+    312: { descripcion: "llovizna y lluvia intensa", icono: "🌧️🌧️" },
+    313: { descripcion: "chubascos y llovizna", icono: "🌧️🌦️" },
+    314: { descripcion: "chubascos y llovizna fuerte", icono: "🌧️🌧️" },
+    321: { descripcion: "chubascos de llovizna", icono: "🌦️" },
+  
+    500: { descripcion: "lluvia ligera", icono: "🌦️" },
+    501: { descripcion: "lluvia moderada", icono: "🌧️" },
+    502: { descripcion: "lluvia fuerte", icono: "🌧️🌧️" },
+    503: { descripcion: "lluvia muy fuerte", icono: "🌧️🌧️🌧️" },
+    504: { descripcion: "lluvia extrema", icono: "🌧️⚠️" },
+    511: { descripcion: "lluvia helada", icono: "🌧️❄️" },
+    520: { descripcion: "chubascos ligeros", icono: "🌦️" },
+    521: { descripcion: "chubascos", icono: "🌧️" },
+    522: { descripcion: "chubascos fuertes", icono: "🌧️🌧️" },
+    531: { descripcion: "chubascos irregulares", icono: "🌧️🌦️" },
+  
+    600: { descripcion: "nieve ligera", icono: "🌨️" },
+    601: { descripcion: "nieve", icono: "❄️" },
+    602: { descripcion: "nieve intensa", icono: "❄️❄️" },
+    611: { descripcion: "aguanieve", icono: "🌨️🌧️" },
+    612: { descripcion: "chubascos de aguanieve", icono: "🌨️🌧️" },
+    613: { descripcion: "chubascos de nieve", icono: "🌨️" },
+    615: { descripcion: "lluvia ligera y nieve", icono: "🌧️❄️" },
+    616: { descripcion: "lluvia y nieve", icono: "🌧️❄️" },
+    620: { descripcion: "chubascos de nieve ligera", icono: "🌨️" },
+    621: { descripcion: "chubascos de nieve", icono: "❄️" },
+    622: { descripcion: "chubascos de nieve intensa", icono: "❄️❄️" },
+  
+    701: { descripcion: "niebla", icono: "🌫️" },
+    711: { descripcion: "humo", icono: "💨" },
+    721: { descripcion: "neblina", icono: "🌫️" },
+    731: { descripcion: "arena/polvo", icono: "🌪️" },
+    741: { descripcion: "niebla densa", icono: "🌫️🌫️" },
+    751: { descripcion: "arena", icono: "🏜️" },
+    761: { descripcion: "polvo", icono: "💨" },
+    762: { descripcion: "cenizas volcánicas", icono: "🌋" },
+    771: { descripcion: "ráfagas de viento", icono: "💨" },
+    781: { descripcion: "tornado", icono: "🌪️" },
+  
+    800: { descripcion: "cielo despejado", icono: "☀️" },
+    801: { descripcion: "pocas nubes", icono: "🌤️" },
+    802: { descripcion: "nubes dispersas", icono: "⛅" },
+    803: { descripcion: "nubes rotas", icono: "🌥️" },
+    804: { descripcion: "nublado", icono: "☁️" }
+};
+
+const CODIGOS_TOMORROW = {
+    1000: { descripcion: "Despejado", icono: "☀️" },
+    1100: { descripcion: "Mayormente despejado", icono: "🌤️" },
+    1101: { descripcion: "Parcialmente nublado", icono: "⛅" },
+    1102: { descripcion: "Mayormente nublado", icono: "🌥️" },
+    1001: { descripcion: "Nublado", icono: "☁️" },
+    2000: { descripcion: "Niebla", icono: "🌫️" },
+    2100: { descripcion: "Neblina ligera", icono: "🌁" },
+    4000: { descripcion: "Llovizna", icono: "🌦️" },
+    4001: { descripcion: "Lluvia", icono: "🌧️" },
+    4200: { descripcion: "Lluvia ligera", icono: "🌦️" },
+    4201: { descripcion: "Lluvia intensa", icono: "🌧️" },
+    5000: { descripcion: "Nieve", icono: "🌨️" },
+    5001: { descripcion: "Nieve ligera", icono: "🌨️" },
+    5100: { descripcion: "Nieve ligera", icono: "🌨️" },
+    5101: { descripcion: "Nieve intensa", icono: "❄️" },
+    6000: { descripcion: "Aguanieve", icono: "🌨️" },
+    6001: { descripcion: "Aguanieve intensa", icono: "🌨️" },
+    6200: { descripcion: "Aguanieve ligera", icono: "🌨️" },
+    6201: { descripcion: "Aguanieve intensa", icono: "🌨️" },
+    7000: { descripcion: "Granizo", icono: "🌩️" },
+    7101: { descripcion: "Granizo intenso", icono: "🌩️" },
+    7102: { descripcion: "Granizo ligero", icono: "🌩️" },
+    8000: { descripcion: "Tormenta eléctrica", icono: "⛈️" }
 };
 
 function getFromEscala (escala, valor) {
@@ -138,12 +229,12 @@ const Sources = {
     "open-meteo-ARP": "https://api.open-meteo.com/v1/forecast?latitude=#&longitude=#&minutely_15=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,visibility,cape&models=meteofrance_arpege_europe&timeformat=unixtime",
     "openweathermap3": "https://api.openweathermap.org/data/2.5/forecast?lat=#&lon=#&lang=es&units=metric&APPID=e3993f2ed6f2dd3b82764b0fc55d3f2c",
     "openweathermap": "https://api.openweathermap.org/data/2.5/onecall?lat=#&lon=#&lang=es&cnt=1&units=metric&APPID=e3993f2ed6f2dd3b82764b0fc55d3f2c",
-    "met.no": "https://api.met.no/weatherapi/locationforecast/1.9/?lat=#&lon=#",
-    "darksky": "https://api.darksky.net/forecast/a48eb522ce6b50ffcb1b69cf4655c8eb/#,#?units=si&lang=es"
+    "tomorrow.io": "https://api.tomorrow.io/v4/weather/forecast?location=#,#&timesteps=1m,1h,1d&units=metric&apikey=adsRpJYHZQlvE6nrSQ14AUDqvOUb7qnH&fields=temperature,humidity,pressureSeaLevel,cloudCover,precipitationProbability,precipitationIntensity,uvIndex,windSpeed,windDirection,visibility,weatherCode"
+    //"met.no": "https://api.met.no/weatherapi/locationforecast/1.9/?lat=#&lon=#",
+    //"darksky": "https://api.darksky.net/forecast/a48eb522ce6b50ffcb1b69cf4655c8eb/#,#?units=si&lang=es"
 };
 
 function getUrl (src, coords) {
-    const DECIMALES = 3;
     var url = Sources[src];
     url = url.replace("#", coords[0].toFixed(DECIMALES));
     url = url.replace("#", coords[1].toFixed(DECIMALES));
@@ -203,7 +294,8 @@ const openMeteoConverter = (data) => {
         m.vdir = normalizar(d.wind_direction_10m, i);
         m.rach = normalizar(d.wind_gusts_10m, i);
         m.uv = normalizar(d.uv_index, i, 1);
-        m.text = CODIGOS[normalizar(d.weather_code, i)] || "---";
+        const codigo = CODIGOS_OPENMETEO[normalizar(d.weather_code, i)] || { descripcion: "desconocido", icono: "❓" };
+        m.text = `<span title="${codigo.descripcion}">${codigo.icono}</span>`;
         m.cape = normalizar(d.cape, i);
         r.push(m);
     }
@@ -248,7 +340,8 @@ var Converters = {
             m.prec += (d.snow && d.snow["1h"]) ? d.snow["1h"] : 0.0;
             m.vien = parseFloat(d.wind_speed * 3.6).toFixed(1);
             m.vdir = d.wind_deg;
-            m.text = d.weather[0].description;
+            const codigo = CODIGOS_OPENWEATHER[d.weather[0].id] || { descripcion: "desconocido", icono: "❓" };
+            m.text = `<span title="${codigo.descripcion}">${codigo.icono}</span>`;
             r.push(m);
         }
         return r;
@@ -268,7 +361,8 @@ var Converters = {
             m.prec += (d.snow && d.snow["3h"]) ? d.snow["3h"] : 0.0;
             m.vien = parseFloat(d.wind.speed * 3.6).toFixed(1);
             m.vdir = d.wind.deg;
-            m.text = d.weather[0].description;
+            const codigo = CODIGOS_OPENWEATHER[d.weather[0].id] || { descripcion: "desconocido", icono: "❓" };
+            m.text = `<span title="${codigo.descripcion}">${codigo.icono}</span>`;
             r.push(m);
         }
         return r;
@@ -306,6 +400,27 @@ var Converters = {
             m.vien = parseFloat(d.windGust * 3.6).toFixed(1);
             m.vdir = d.windBearing;
             m.radi = d.uvIndex;
+            r.push(m);
+        }
+        return r;
+    },
+    "tomorrow.io": function (data) {
+        var r = [];
+        data = data.timelines.hourly;
+        for (var i = 0; i < data.length; i++) {
+            var m = {}, d = data[i];
+            m.fech = new Date(d.time);
+            d = d.values;
+            m.temp = d.temperature.toFixed(1);
+            m.nubo = d.cloudCover;
+            m.hume = d.humidity;
+            m.pres = d.pressureSeaLevel.toFixed(0);
+            m.prec = d.rainIntensity;
+            m.vien = d.windSpeed.toFixed(1);
+            m.vdir = d.windDirection;
+            m.radi = d.uvIndex;
+            const codigo = CODIGOS_TOMORROW[d.weatherCode] || { descripcion: "desconocido", icono: "❓" };
+            m.text = `<span title="${codigo.descripcion}">${codigo.icono}</span>`;
             r.push(m);
         }
         return r;
