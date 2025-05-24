@@ -7,7 +7,7 @@
 	<title>Pronóstico</title>
 	<style>
 		body {
-			font-family: sans-serif;
+			font-family: 'Roboto', sans-serif;
 			font-size: 1rem;
 			text-align: center;
 			background-color: #0a2658;
@@ -79,8 +79,8 @@
 		.lluv::after { content: 'mm'; }
 		.pres::after { content: 'hPa'; }
 		.vien::after { content: 'Km/h'; }
-		.mx::before { content: "\25B2"; }
-		.mn::before { content: "\25BC"; }
+		.mx::after { color: red; font-weight: bolder; }
+		.mn::after { color: blue; font-weight: bolder; }
 		.wd::before { content: "\2193"; }
 		.tx {
 			white-space: nowrap;
@@ -242,7 +242,7 @@
 					.append(newSpan((acum[4] / acum[0]).toFixed(1), "pc nubo"))
 					.append(newSpan(acum[5].toFixed(1), "mm lluv"))
 					.append(newSpan((acum[7] / acum[0]).toFixed(1), "pc hume"))
-					.append(newSpan(`${presionSigno()}${presionVariacion()}`, "pr uv"))
+					//.append(newSpan(`${presionSigno()}${presionVariacion()}`, "pr uv"))
 					.append(newSpan(vientoPredominante(acum[10])))
 					.append(newSpan(acum[6], "vien"))
 					.append(newSpan(acum[8], "uv"))

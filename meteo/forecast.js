@@ -224,12 +224,12 @@ function formateaDate (fecha, formato) {
 }
 
 const Sources = {
-    "open-meteo-16": "https://api.open-meteo.com/v1/forecast?latitude=#&longitude=#&hourly=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,surface_pressure,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index&timeformat=unixtime&timezone=auto&forecast_days=16",
-    "open-meteo-ARO": "https://api.open-meteo.com/v1/forecast?latitude=#&longitude=#&minutely_15=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,visibility,cape&models=meteofrance_arome_france_hd&timeformat=unixtime",
-    "open-meteo-ARP": "https://api.open-meteo.com/v1/forecast?latitude=#&longitude=#&minutely_15=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,visibility,cape&models=meteofrance_arpege_europe&timeformat=unixtime",
     "openweathermap3": "https://api.openweathermap.org/data/2.5/forecast?lat=#&lon=#&lang=es&units=metric&APPID=e3993f2ed6f2dd3b82764b0fc55d3f2c",
-    "openweathermap": "https://api.openweathermap.org/data/2.5/onecall?lat=#&lon=#&lang=es&cnt=1&units=metric&APPID=e3993f2ed6f2dd3b82764b0fc55d3f2c",
-    "tomorrow.io": "https://api.tomorrow.io/v4/weather/forecast?location=#,#&timesteps=1m,1h,1d&units=metric&apikey=adsRpJYHZQlvE6nrSQ14AUDqvOUb7qnH&fields=temperature,humidity,pressureSeaLevel,cloudCover,precipitationProbability,precipitationIntensity,uvIndex,windSpeed,windDirection,visibility,weatherCode"
+    "tomorrow.io": "https://api.tomorrow.io/v4/weather/forecast?location=#,#&timesteps=1m,1h,1d&units=metric&apikey=adsRpJYHZQlvE6nrSQ14AUDqvOUb7qnH&fields=temperature,humidity,pressureSeaLevel,cloudCover,precipitationProbability,precipitationIntensity,uvIndex,windSpeed,windDirection,visibility,weatherCode",
+    "open-meteo-16": "https://api.open-meteo.com/v1/forecast?latitude=#&longitude=#&hourly=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,surface_pressure,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index&timeformat=unixtime&timezone=auto&forecast_days=16",
+    "open-meteo-ARO": "https://api.open-meteo.com/v1/forecast?latitude=#&longitude=#&hourly=temperature_2m,apparent_temperature,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,cape,relative_humidity_2m,precipitation,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index&models=arome_seamless&timeformat=unixtime",
+    "open-meteo-ARP": "https://api.open-meteo.com/v1/forecast?latitude=#&longitude=#&hourly=temperature_2m,apparent_temperature,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,cape,relative_humidity_2m,precipitation,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index&models=arpege_seamless&timeformat=unixtime",
+    //"openweathermap": "https://api.openweathermap.org/data/2.5/onecall?lat=#&lon=#&lang=es&cnt=1&units=metric&APPID=e3993f2ed6f2dd3b82764b0fc55d3f2c",
     //"met.no": "https://api.met.no/weatherapi/locationforecast/1.9/?lat=#&lon=#",
     //"darksky": "https://api.darksky.net/forecast/a48eb522ce6b50ffcb1b69cf4655c8eb/#,#?units=si&lang=es"
 };
@@ -361,6 +361,7 @@ var Converters = {
             m.prec += (d.snow && d.snow["3h"]) ? d.snow["3h"] : 0.0;
             m.vien = parseFloat(d.wind.speed * 3.6).toFixed(1);
             m.vdir = d.wind.deg;
+            m.rach = parseFloat(d.wind.gust * 3.6).toFixed(1);
             const codigo = CODIGOS_OPENWEATHER[d.weather[0].id] || { descripcion: "desconocido", icono: "❓" };
             m.text = `<span title="${codigo.descripcion}">${codigo.icono}</span>`;
             r.push(m);
