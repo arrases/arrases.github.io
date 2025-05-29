@@ -239,12 +239,12 @@
 					.append(newSpan(acum[1], "mx temp"))
 					.append(newSpan((acum[2] / acum[0]).toFixed(1), "md temp"))
 					.append(newSpan(acum[3], "mn temp"))
-					.append(newSpan((acum[4] / acum[0]).toFixed(1), "pc nubo"))
+					.append(newSpan(Math.round(acum[4] / acum[0]), "pc nubo"))
 					.append(newSpan(acum[5].toFixed(1), "mm lluv"))
-					.append(newSpan((acum[7] / acum[0]).toFixed(1), "pc hume"))
+					.append(newSpan(Math.round(acum[7] / acum[0]), "pc hume"))
 					//.append(newSpan(`${presionSigno()}${presionVariacion()}`, "pr uv"))
 					.append(newSpan(vientoPredominante(acum[10])))
-					.append(newSpan(acum[6], "vien"))
+					.append(newSpan(Math.round(acum[6]), "vien"))
 					.append(newSpan(acum[8], "uv"))
 				;
 			}
