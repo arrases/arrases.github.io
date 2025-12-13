@@ -163,6 +163,57 @@ const CODIGOS_TOMORROW = {
     8000: { descripcion: "Tormenta eléctrica", icono: "⛈️" }
 };
 
+const CODIGOS_WEATHERAPI = {
+    1000: { descripcion: "Despejado", icono: "☀️" },
+    1003: { descripcion: "Mayormente despejado", icono: "🌤️" },
+    1006: { descripcion: "Nublado", icono: "☁️" },
+    1009: { descripcion: "Cubierto", icono: "☁️" },
+    1030: { descripcion: "Neblina", icono: "🌫️" },
+    1063: { descripcion: "Lluvia ligera dispersa posible", icono: "🌦️" },
+    1066: { descripcion: "Nieve ligera dispersa posible", icono: "🌨️" },
+    1069: { descripcion: "Aguanieve dispersa posible", icono: "🌨️" },
+    1072: { descripcion: "Llovizna helada dispersa posible", icono: "🌧️" },
+    1087: { descripcion: "Tormentas posibles", icono: "⛈️" },
+    1114: { descripcion: "Nieve levantada por el viento", icono: "🌨️" },
+    1117: { descripcion: "Tormenta de nieve", icono: "❄️" },
+    1135: { descripcion: "Niebla", icono: "🌫️" },
+    1147: { descripcion: "Niebla helada", icono: "🌫️" },
+    1150: { descripcion: "Llovizna ligera", icono: "🌦️" },
+    1153: { descripcion: "Llovizna ligera", icono: "🌦️" },
+    1168: { descripcion: "Llovizna helada", icono: "🌧️" },
+    1171: { descripcion: "Llovizna helada", icono: "🌧️" },
+    1180: { descripcion: "Lluvia ligera dispersa", icono: "🌦️" },
+    1183: { descripcion: "Lluvia ligera", icono: "🌦️" },
+    1186: { descripcion: "Lluvia moderada a veces", icono: "🌧️" },
+    1189: { descripcion: "Lluvia moderada", icono: "🌧️" },
+    1192: { descripcion: "Lluvia fuerte a veces", icono: "🌧️" },
+    1195: { descripcion: "Lluvia fuerte", icono: "🌧️" },
+    1198: { descripcion: "Lluvia helada ligera", icono: "🌧️" },
+    1201: { descripcion: "Lluvia helada moderada o intensa", icono: "🌧️" },
+    1204: { descripcion: "Aguanieve ligera", icono: "🌨️" },
+    1207: { descripcion: "Aguanieve moderada o intensa", icono: "🌨️" },
+    1210: { descripcion: "Nieve ligera dispersa", icono: "🌨️" },
+    1213: { descripcion: "Nieve ligera", icono: "🌨️" },
+    1216: { descripcion: "Nieve moderada dispersa", icono: "🌨️" },
+    1219: { descripcion: "Nieve moderada", icono: "🌨️" },
+    1222: { descripcion: "Nieve intensa dispersa", icono: "❄️" },
+    1225: { descripcion: "Nieve intensa", icono: "❄️" },
+    1237: { descripcion: "Granizo", icono: "🧊" },
+    1240: { descripcion: "Chubasco ligero de lluvia", icono: "🌦️" },
+    1243: { descripcion: "Chubasco moderado o intenso de lluvia", icono: "🌧️" },
+    1246: { descripcion: "Chubasco torrencial de lluvia", icono: "🌧️" },
+    1249: { descripcion: "Chubascos ligeros de aguanieve", icono: "🌨️" },
+    1252: { descripcion: "Chubascos moderados o intensos de aguanieve", icono: "🌨️" },
+    1255: { descripcion: "Chubascos ligeros de nieve", icono: "🌨️" },
+    1258: { descripcion: "Chubascos moderados o intensos de nieve", icono: "❄️" },
+    1261: { descripcion: "Chubascos ligeros de granizo", icono: "🧊" },
+    1264: { descripcion: "Chubascos moderados o intensos de granizo", icono: "🧊" },
+    1273: { descripcion: "Lluvia ligera dispersa con tormenta", icono: "⛈️" },
+    1276: { descripcion: "Lluvia moderada o intensa con tormenta", icono: "⛈️" },
+    1279: { descripcion: "Nieve ligera dispersa con tormenta", icono: "🌨️" },
+    1282: { descripcion: "Nieve moderada o intensa con tormenta", icono: "🌨️" }
+};
+
 function getFromEscala (escala, valor) {
     if (!escala) {
         return null;
@@ -229,6 +280,8 @@ const Sources = {
     "open-meteo-16": "https://api.open-meteo.com/v1/forecast?latitude=#&longitude=#&hourly=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,surface_pressure,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,visibility,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index&timeformat=unixtime&timezone=auto&forecast_days=16",
     "open-meteo-ARO": "https://api.open-meteo.com/v1/forecast?latitude=#&longitude=#&hourly=temperature_2m,apparent_temperature,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,cape,relative_humidity_2m,precipitation,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index&models=arome_seamless&timeformat=unixtime",
     "open-meteo-ARP": "https://api.open-meteo.com/v1/forecast?latitude=#&longitude=#&hourly=temperature_2m,apparent_temperature,cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high,cape,relative_humidity_2m,precipitation,weather_code,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index&models=arpege_seamless&timeformat=unixtime",
+    "weatherapi": "https://api.weatherapi.com/v1/forecast.json?key=f9de2d4cfae94cb5860165306251312&q=#,#&days=14&aqi=yes&alerts=yes",
+    "7timer": "https://www.7timer.info/bin/api.pl?lat=#&lon=#&product=meteo&output=json",
     //"openweathermap": "https://api.openweathermap.org/data/2.5/onecall?lat=#&lon=#&lang=es&cnt=1&units=metric&APPID=e3993f2ed6f2dd3b82764b0fc55d3f2c",
     //"met.no": "https://api.met.no/weatherapi/locationforecast/1.9/?lat=#&lon=#",
     //"darksky": "https://api.darksky.net/forecast/a48eb522ce6b50ffcb1b69cf4655c8eb/#,#?units=si&lang=es"
@@ -242,7 +295,7 @@ function getUrl (src, coords) {
 }
 
 async function getUrlData (url) {
-    const cdata = sessionStorage[url];
+    const cdata = localStorage.getItem(`almfor.cacheurl.${url}`);
     if (cdata && (JSON.parse(cdata).tscache + 600000 > Date.now() || $("footer > .cache").hasClass(CL_ON))) {
         return JSON.parse(cdata);
     }
@@ -250,7 +303,7 @@ async function getUrlData (url) {
         const response = await fetch(url);
         const data = await response.json();
         data.tscache = Date.now();
-        sessionStorage[url] = JSON.stringify(data);
+        localStorage.setItem(`almfor.cacheurl.${url}`, JSON.stringify(data));
         return data;
     } catch (err) {
         mostrarMensaje("Error al obtener pronóstico", err);
@@ -423,6 +476,45 @@ var Converters = {
             const codigo = CODIGOS_TOMORROW[d.weatherCode] || { descripcion: "desconocido", icono: "❓" };
             m.text = `<span title="${codigo.descripcion}">${codigo.icono}</span>`;
             r.push(m);
+        }
+        return r;
+    },
+    "7timer": function (data) {
+        const r = [];
+        const iniDate = new Date(Date.UTC(Number(data.init.slice(0, 4)), Number(data.init.slice(4, 6)) - 1, Number(data.init.slice(6, 8), Number(data.init.slice(8, 10)))));
+        data = data.dataseries;
+        for (let i = 0; i < data.length; i++) {
+            var m = {}, d = data[i];
+            m.fech = new Date(iniDate.getTime() + d.timepoint * 60 * 60 * 1000);
+            m.temp = d.temp2m;
+            m.nubo = ((d.cloudcover - 1) / 8) * 100;
+            m.hume = [2,7,12,17,22,27,32,37,42,47,52,57,62,67,72,77,82,87,92,97,100][d.rh2m+4];
+            m.pres = d.msl_pressure;
+            m.prec = d.prec_amount;
+            m.vien = [1,7,21,34,50,75,103,134][d.wind10m.speed-1];
+            m.vdir = d.wind10m.direction;
+            r.push(m);
+        }
+        return r;
+    },
+    "weatherapi": function (data) {
+        const r = [];
+        for (let day of data.forecast.forecastday) {
+            for (let hora of day.hour) {
+                var m = {};
+                m.fech = new Date(hora.time_epoch * 1000);
+                m.temp = hora.temp_c;
+                m.nubo = hora.cloud;
+                m.hume = hora.humidity;
+                m.pres = hora.pressure_mb;
+                m.prec = hora.precip_mm;
+                m.vien = hora.wind_kph;
+                m.vdir = hora.wind_degree;
+                m.rach = hora.gust_kph;
+                const codigo = CODIGOS_WEATHERAPI[hora.condition.code] || { descripcion: "desconocido", icono: "❓" };
+                m.text = `<span title="${codigo.descripcion}">${codigo.icono}</span>`;
+                r.push(m);
+            }
         }
         return r;
     }
