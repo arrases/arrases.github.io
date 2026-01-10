@@ -202,9 +202,9 @@
                 if (response && response.results && response.results.length > 0) {
                     return response.results[0].elevation;
                 }
+                return null;
             } catch (error) {
                 console.error(`Error al obtener elevación de ${coords}`, err);
-            } finally {
                 return null;
             }
         }
