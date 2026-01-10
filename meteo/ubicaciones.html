@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,21 +8,25 @@
         body {
             background-color: #ddddff;
             font-family: sans-serif;
-            font-size: 1rem;
+            font-size: large;
             padding: 0;
+        }
+
+        body > * {
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            border-bottom: 1px solid;
         }
 
         h1:first-child {
             margin-top: 0;
         }
 
-        body > * {
-            max-width: 25rem;
-            margin: 1rem auto 0;
-        }
-
         section {
-            padding: 1rem;
+            padding: .5rem;
             border-radius: .5rem;
             border: 1px solid #ccc;
         }
@@ -32,31 +35,44 @@
             text-align: center;
         }
 
+        footer {
+            text-align: right;
+            padding: .5em;
+        }
+
+        input, button {
+            font-size: inherit;
+        }
+
         ul {
             list-style: none;
             padding: 0;
         }
 
         li {
-            font-size: .9rem;
+            font-size: .9em;
             padding: .25rem 0;
         }
 
-        li>input {
+        li > input {
             margin: 0 .5rem 0 0;
+        }
+
+        #sugerencias {
+            list-style: inside;
         }
 
         #sugerencias>li:nth-child(2n) {
             background-color: #f1f1f1;
         }
 
-        footer {
-            font-size: small;
-            text-align: right;
+        @media only screen and (min-width: 992px) {
+            body { font-size: 1rem !important; }
+            body > * { max-width: 70%; }
+            section { padding: 1rem; }
         }
     </style>
 </head>
-
 <body>
     <section>
         <h1>Ubicaciones</h1>
@@ -152,8 +168,9 @@
                             "c": [normalizarCoord(feature.geometry.coordinates[1]), normalizarCoord(feature.geometry.coordinates[0])],
                             "e": feature.properties?.extratags?.ele ?? null,
                         })
-                        .on("click", (e) => {
+                        .on("click", async (e) => {
                             const $li = $(e.target);
+                            $li.data(await crearNuevaUbicacion({ ...$li.data() }));
                             $("#ubicaciones").append(crearUbicacion($li.data()));
                             guardarUbicaciones();
                         })
@@ -166,6 +183,24 @@
             } catch (err) {
                 console.error("Error en buscar", err);
                 alert("Ha ocurrido un error");
+            }
+        }
+
+        async function crearNuevaUbicacion(data) {
+            data.e ??= await getElevacion(data.c);
+            return data;
+        }
+
+        async function getElevacion(coords) {
+            try {
+                const response = $.getJSON(`https://api.opentopodata.org/v1/srtm90m?locations=${coords[0]},${coords[1]}`);
+                if (response && response.results && response.results.length > 0) {
+                    return response.results[0].elevation;
+                }
+            } catch (error) {
+                console.error(`Error al obtener elevación de ${coords}`, err);
+            } finally {
+                return null;
             }
         }
 
@@ -190,8 +225,10 @@
         }
 
         function vaciar() {
-            $("#ubicaciones").empty();
-            guardarUbicaciones();
+            if (window.confirm("¿Quieres eliminar todas las ubicaciones?")) {
+                $("#ubicaciones").empty();
+                guardarUbicaciones();
+            }
         }
 
         function elegidos() {
