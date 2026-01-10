@@ -193,7 +193,12 @@
 
         async function getElevacion(coords) {
             try {
-                const response = $.getJSON(`https://api.opentopodata.org/v1/srtm90m?locations=${coords[0]},${coords[1]}`);
+                const response = await $.ajax({
+                    url: "https://api.open-elevation.com/api/v1/lookup",
+                    method: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({ locations: [{ latitude: coords[0], longitude: coords[1] }] })
+                });
                 if (response && response.results && response.results.length > 0) {
                     return response.results[0].elevation;
                 }
