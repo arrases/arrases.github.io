@@ -180,10 +180,10 @@
 						.append(newSpan(d.temp, "temp"))
 						.append(newSpan(d.nubo, "pc nubo"))
 						.append(newSpan(d.prec.toFixed(1), "lluv mm"))
-						.append(newSpan(d.hume, "pc hume"))
-						.append(newSpan(d.pres, "pres"))
 						.append(newSpan(d.vien, "vien"))
 						.append(newSpan(d.vdir, "dire"))
+						.append(newSpan(d.hume, "pc hume"))
+						.append(newSpan(d.pres, "pres"))
 						.append(newSpan(d.radi, "uv"))
 				);
 			}
@@ -241,10 +241,10 @@
 					.append(newSpan(acum[3], "mn temp"))
 					.append(newSpan(Math.round(acum[4] / acum[0]), "pc nubo"))
 					.append(newSpan(acum[5].toFixed(1), "mm lluv"))
+					.append(newSpan(Math.round(acum[6]), "vien"))
+					.append(newSpan(vientoPredominante(acum[10])))
 					.append(newSpan(Math.round(acum[7] / acum[0]), "pc hume"))
 					//.append(newSpan(`${presionSigno()}${presionVariacion()}`, "pr uv"))
-					.append(newSpan(vientoPredominante(acum[10])))
-					.append(newSpan(Math.round(acum[6]), "vien"))
 					.append(newSpan(acum[8], "uv"))
 				;
 			}
