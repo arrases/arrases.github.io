@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width" />
+	<link rel=icon type=image/png href=icono.png sizes=192x192>
+	<title>Pronóstico</title>
+	<style>
+		plant {
+			display: none;
+		}
+
+		body {
+			font-family: 'Roboto', sans-serif;
+			font-size: 1rem;
+			text-align: center;
+			background-color: #0a2658;
+		}
+
+		main {
+			margin: 1rem 0;
+		}
+
+		.ubicacion {
+			display: inline-block;
+			margin: .4rem;
+			padding: .3rem;
+			min-width: 90%;
+			border: 1px solid #bbb;
+			background-color: #ccc;
+		}
+
+		.ubicacion > a {
+			display: block;
+			text-align: center;
+			cursor: pointer;
+		}
+
+		time {
+			font-size: small;
+			color: #888;
+		}
+
+		.mto {
+			display: inline-block;
+			min-width: 10rem;
+			border: 1px solid #aaa;
+			padding: .5rem;
+			max-height: 33rem;
+    		overflow: auto;
+			font-size: small;
+		}
+
+		.mto > h4 {
+			border-top: 1px solid black;
+			margin: .75rem 0 0 0;
+			display: flex;
+			cursor: pointer;
+		}
+
+		.mto > div {
+			display: flex;
+			align-items: center;
+			border-top: 1px solid #aaa;
+		}
+	
+		.mto span {
+			padding: .15rem;
+			margin: 0 .1rem;
+			flex-basis: auto;
+			border-radius: .25rem;
+    		text-align: center;
+			min-width: 2rem;
+		}
+
+		span::after {
+			font-size: .5rem;
+			vertical-align: super;
+		}
+
+		.temp::after { content: 'ºC'; }
+		.pc::after { content: '%'; }
+		.lluv::after { content: 'mm'; }
+		.pres::after { content: 'hPa'; }
+		.vien::after { content: 'Km/h'; }
+		.mx::after { color: red; font-weight: bolder; }
+		.mn::after { color: blue; font-weight: bolder; }
+		.wd::before { content: "\2193"; }
+		.tx {
+			white-space: nowrap;
+			overflow: hidden;
+			font-size: x-small;
+		}
+		.ic {
+			font-size: large;
+		}
+		h4 > .fe { width: 2rem; }
+		div > .fe { width: 1rem; }
+
+		.on { background-color: lime; }
+		.ld { background-color: gold; }
+		.er { background-color: red; }
+
+		button {
+			border: 1px solid #4b4b4b;
+			background-color: #aaa;
+			padding: .35rem;
+			margin: .15rem;
+		}
+
+		ul {
+			padding-left: 1rem;
+		}
+
+		li {
+			text-align: initial;
+			cursor: pointer;
+		}
+
+		input {
+			border: none;
+			border-bottom: 1px solid #888;
+		}
+
+		canvas {
+			width: 99%;
+			height: 600px;
+			margin-bottom: 1rem;
+		}
+
+		@media (max-width: 640px) {
+			canvas {
+				height: 350px;
+			}
+		}
+
+		.toast {
+			display: none;
+			position: fixed;
+			bottom: 1rem;
+			left: 5%;
+			right: 5%;
+			padding: .25rem;
+			border-radius: 1rem;
+			background-color: #333;
+			border: 1px solid #111;
+			color: #bbb;
+			text-align: center;
+		}
+
+		.toast.on {
+			display: block;
+		}
+	</style>
+</head>
+<body>
+	<nav class="fuentes"></nav>
+	<main></main>
+	<footer>
+		<button class="cache">Cache</button>
+		<button class="ubicaciones">Ubicaciones</button>
+	</footer>
+	<div class="toast"></div>
+	<plant>
+		<div class="mto">
+			<canvas></canvas>
+			<canvas></canvas>
+		</div>
+	</plant>
+	<script src="jquery-3.1.1.min.js"></script>
+	<script src="forecast.js"></script>
+	<script src="chart.umd.min.js"></script>
+	<script src="chartjs-adapter-date-fns.bundle.min.js"></script>
+	<!--<script src="data.js"></script><!--LOCAL-->
+	<script>
+		function crearDataset (titulo, color, tipo, opciones) {
+			let resultado = {"label":"datos","data":[],"fill":false,"stepped":false,"cubicInterpolationMode":"monotone","tension":0.15,"spanGaps":true};
+            resultado.label = titulo || "valores";
+            resultado.borderColor = color || "red";
+            resultado.type = tipo || "line";
+            if (tipo === "bar") {
+                resultado.borderColor = color;
+                resultado.backgroundColor = color;
+                resultado.barThickness = 2;
+            }
+            if (opciones) {
+                resultado = { ...resultado, ...opciones};
+            }
+            return resultado;
+        }
+
+		function crearGrafico (tipo) {
+			return {"type":tipo||"line","data":{"datasets":[]},"options":{"scales":{"x":{"type":"time",offset:false,"time":{"tooltipFormat":"dd/MM/yyyy HH:mm","displayFormats":{"minute":"HH:mm","hour":"EEE dd HH:mm","day":"EEE dd HH:mm","week":"EEE dd/MM","month":"EEE dd/MM","quarter":"dd/MM"}}}}}};
+		}
+
+		function mostrarGrafico (canv, data) {
+            new Chart(canv.getContext('2d'), data);
+		}
+
+		async function pronostico (ev) {
+			var $tar = $(ev.target);
+			if ($tar[0].nodeName === "SPAN") {
+				return;
+			}
+			$tar.removeClass(`${CL_LD} ${CL_CH} ${CL_ER}`);
+			const p = await getPosicion($tar);
+			var src = $(".fuentes > button.on").html();
+			var url = getUrl(src, p);
+			$tar.addClass(CL_LD);
+			const d = await getUrlData(url);
+			var data;
+			try {
+				data = Converters[src](d);
+			} catch (err) {
+				console.error(err);
+				mostrarMensaje(`Error converter ${src}: ${err.message}`, d);
+				return;
+			}
+			var $par = $tar.parent();
+			$tar.find("time").html(` (${new Date(d.tscache).toLocaleString()})`);
+			$par.find(".mto").remove();
+			const $cont = $("plant > *").clone();
+			$par.append($cont);
+
+			const grdata = crearGrafico();
+			grdata.options.scales.y1 = { "position":"right","grid":{"display":false} };
+			grdata.options.scales.y2 = { "position":"right","grid":{"display":false} };
+			grdata.data.datasets = [
+				crearDataset("temperatura", "red", "line", { "yAxisID": "y", "barThickness": 2 }),
+				crearDataset("nubosidad", "gray", "line", { "yAxisID": "y1" }),
+				crearDataset("humedad", "cyan", "line", { "yAxisID": "y1" }),
+				crearDataset("precipitacion", "blue", "bar", { "yAxisID": "y", "barThickness": 4 }),
+				crearDataset("presión", "violet", "line", { "yAxisID": "y2" })
+			];
+
+			const grdata2 = crearGrafico();
+			grdata2.options.scales.y1 = { "position":"right","grid":{"display":false} };
+			grdata2.data.datasets = [
+				crearDataset("viento", "lime", "line", { "yAxisID": "y" }),
+				crearDataset("racha", "green", "line", { "yAxisID": "y", "barThickness": 2 }),
+				crearDataset("dirección", "cyan", "line", { "yAxisID": "y1" }),
+			];
+
+			for (const m of data) {
+				grdata.data.datasets[0].data.push({ x: m.fech, y: m.temp });
+				grdata.data.datasets[1].data.push({ x: m.fech, y: m.nubo });
+				grdata.data.datasets[2].data.push({ x: m.fech, y: m.hume });
+				grdata.data.datasets[3].data.push({ x: m.fech, y: m.prec });
+				grdata.data.datasets[4].data.push({ x: m.fech, y: m.pres });
+				grdata2.data.datasets[0].data.push({ x: m.fech, y: m.vien });
+				grdata2.data.datasets[1].data.push({ x: m.fech, y: m.rach });
+				grdata2.data.datasets[2].data.push({ x: m.fech, y: m.vdir });
+			}
+			mostrarGrafico($cont.find("*")[0], grdata);
+			mostrarGrafico($cont.find("*")[1], grdata2);
+			$tar.removeClass(CL_LD);
+			$tar.toggleClass(CL_CH, Number.isInteger(d.tscache));
+		}
+
+		$(".ubicacion > a").on(EV_CL, pronostico);
+	</script>
+</body>
+</html>
