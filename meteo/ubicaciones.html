@@ -66,6 +66,12 @@
             background-color: #f1f1f1;
         }
 
+        #map {
+            width:100%;
+            height:500px;
+            border-radius:10px;
+        }
+
         @media only screen and (min-width: 992px) {
             body { font-size: 1rem !important; }
             body > * { max-width: 70%; }
@@ -87,9 +93,14 @@
         <h1>Buscar</h1>
         <nav>
             <input id="buscar" placeholder="Buscar" />
-            <button onclick="buscar()">Buscar</button>
+            <button onclick="buscarTermino()">Buscar</button>
         </nav>
         <ul id="sugerencias"></ul>
+
+        <h1>Mapa</h1>
+        <div id="map">
+            <button onclick="crearMapa()">Cargar mapa</button>
+        </div>
     </section>
     <footer>
         <a href="#" onclick="history.back()">volver</a>
@@ -144,21 +155,38 @@
             return parseFloat(val.toFixed(6));
         }
 
-        async function buscar() {
+        function mostrarMensaje(tipo, mensaje, err, soloconsola) {
+            if (!soloconsola) {
+                alert(mensaje);
+            }
+            if (tipo === "error") {
+                console.error(mensaje, err);
+            }
+        }
+
+        async function buscarTermino() {
             const termino = $("#buscar").val();
             if (!termino || termino.length < 4) {
-                alert("Especifica un poco más...");
+                mostrarMensaje("warn", "Especifica un poco más...");
                 return;
             }
+            await buscar(termino);
+        }
+
+        async function buscar(termino, coords) {
             try {
-                const resultado = await $.getJSON(`https://nominatim.openstreetmap.org/search?q=${termino}&format=geojson&extratags=1`);
+                let url = `https://nominatim.openstreetmap.org/search?q=${termino}&format=geojson&extratags=1`;
+                if (coords) {
+                    url = `https://nominatim.openstreetmap.org/reverse?lat=${coords[0]}&lon=${coords[1]}&format=geojson&extratags=1`;
+                }
+                const resultado = await $.getJSON(url);
                 if (!resultado || resultado.features.length === 0) {
-                    alert("No hay resultados :(");
+                    mostrarMensaje("warn", "No hay resultados :(");
                     return;
                 }
                 $("#sugerencias").empty();
                 for (const feature of resultado.features) {
-                    if (!["city", "town", "village", "locality", "neighbourhood", "road", "peak"].includes(feature.properties.addresstype)) {
+                    if (!["city", "town", "village", "locality", "neighbourhood", "road", "peak", "amenity"].includes(feature.properties.addresstype)) {
                         continue;
                     }
                     const $li = $("<li>")
@@ -178,11 +206,10 @@
                     $("#sugerencias").append($li);
                 }
                 if ($("#sugerencias").children().length === 0) {
-                    alert("No hay resultados :(");
+                    mostrarMensaje("warn", "No hay resultados :(");
                 }
             } catch (err) {
-                console.error("Error en buscar", err);
-                alert("Ha ocurrido un error");
+                mostrarMensaje("error", "Error en buscar", err);
             }
         }
 
@@ -204,7 +231,7 @@
                 }
                 return null;
             } catch (error) {
-                console.error(`Error al obtener elevación de ${coords}`, err);
+                mostrarMensaje("error", `Error al obtener elevación de ${coords}`, err, true);
                 return null;
             }
         }
@@ -245,6 +272,78 @@
         }
 
         cargarUbicaciones();
+
+        async function crearMapa() {
+            const link = document.createElement("link");
+            link.href = "https://unpkg.com/leaflet/dist/leaflet.css";
+            link.rel = "stylesheet";
+            document.head.appendChild(link);
+            const script = document.createElement("script");
+            script.src = "https://unpkg.com/leaflet/dist/leaflet.js";
+            document.head.appendChild(script);
+            document.querySelector("#map > button").remove();
+
+            function getPosicion(options) {
+                return new Promise((resolve, reject) => 
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    })
+                );
+            }
+
+            let coords = [40.4168, -3.7038]; // Madrid
+            try {
+                const posicion = await getPosicion();
+                coords = [posicion.coords.latitude, posicion.coords.longitude];
+            } catch (err) {
+                mostrarMensaje("error", "Error al geoposicionar", err);
+            } finally {
+                if (typeof L === "undefined") {
+                    mostrarMensaje("error", "Error al cargar el mapa");
+                    return;
+                }
+                // Crear mapa
+                const map = L.map('map').setView(coords, 13);
+
+                // OpenStreetMap
+                const osm = L.tileLayer(
+                    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    {
+                        attribution: '&copy; OpenStreetMap contributors'
+                    }
+                );
+
+                // Satélite Esri
+                const satellite = L.tileLayer(
+                    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                    {
+                        attribution: 'Tiles © Esri'
+                    }
+                );
+
+                // Añadir OSM por defecto
+                osm.addTo(map);
+
+                // Selector de capas
+                L.control.layers({
+                    "Mapa": osm,
+                    "Satélite": satellite
+                }).addTo(map);
+
+                // Marcador inicial
+                let marker = L.marker(coords).addTo(map);
+
+                // Cambiar marcador al hacer click
+                map.on('click', async function (e) {
+                    marker.setLatLng(e.latlng);
+                    const pos = [normalizarCoord(e.latlng.lat), normalizarCoord(e.latlng.lng)];
+                    marker.bindPopup(pos.toString()).openPopup();
+                    await buscar(null, pos);
+                });
+            }
+        }
 
         // Maps: https://leafletjs.com/
         // https://stackoverflow.com/questions/925164/openstreetmap-embedding-map-in-webpage-like-google-maps
