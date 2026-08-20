@@ -44,7 +44,7 @@
 		.mto {
 			display: inline-block;
 			min-width: 10rem;
-			border: 1px solid #aaa;
+			border: 1px solid #888888;
 			padding: .5rem;
 			max-height: 33rem;
     		overflow: auto;
@@ -223,22 +223,24 @@
 			$par.append($cont);
 
 			const grdata = crearGrafico();
-			grdata.options.scales.y1 = { "position":"right","grid":{"display":false} };
+			grdata.options.scales.y = { "position":"left", /*"ticks": {"stepSize": 1},*/ "label": "C" };
+			grdata.options.scales.y1 = { "position":"right","grid":{"display":false}, "label": "-" };
 			grdata.options.scales.y2 = { "position":"right","grid":{"display":false} };
+			grdata.options.scales.y3 = { "position":"left","grid":{"display":false}, "ticks": {"stepSize": 0.5} };
 			grdata.data.datasets = [
 				crearDataset("temperatura", "red", "line", { "yAxisID": "y", "barThickness": 2 }),
-				crearDataset("nubosidad", "gray", "line", { "yAxisID": "y1" }),
+				crearDataset("nubosidad", "#444", "line", { "yAxisID": "y1" }),
 				crearDataset("humedad", "cyan", "line", { "yAxisID": "y1" }),
-				crearDataset("precipitacion", "blue", "bar", { "yAxisID": "y", "barThickness": 4 }),
-				crearDataset("presión", "violet", "line", { "yAxisID": "y2" })
+				crearDataset("precipitacion", "blue", "bar", { "yAxisID": "y3", "barThickness": 4 }),
+				crearDataset("presión", "#ad14ad", "line", { "yAxisID": "y2" })
 			];
 
 			const grdata2 = crearGrafico();
-			grdata2.options.scales.y1 = { "position":"right","grid":{"display":false} };
+			grdata2.options.scales.y1 = { "position":"right","ticks": {"stepSize": 45},"grid":{"display":false} };
 			grdata2.data.datasets = [
 				crearDataset("viento", "lime", "line", { "yAxisID": "y" }),
 				crearDataset("racha", "green", "line", { "yAxisID": "y", "barThickness": 2 }),
-				crearDataset("dirección", "cyan", "line", { "yAxisID": "y1" }),
+				crearDataset("dirección", "#62006b", "line", { "yAxisID": "y1" }),
 			];
 
 			for (const m of data) {

@@ -404,9 +404,10 @@ var Converters = {
         data = data.list;
         for (var i = 0; i < data.length; i++) {
             var m = {}, d = data[i];
+            const codigo = CODIGOS_OPENWEATHER[d.weather[0].id] || { descripcion: "desconocido", icono: "❓" };
             m.fech = new Date(d.dt * 1000);
             m.temp = d.main.temp.toFixed(1);
-            m.ciel = d.weather.id;
+            m.ciel = codigo.icono;
             m.nubo = d.clouds.all;
             m.hume = d.main.humidity;
             m.pres = d.main.pressure.toFixed(0);
@@ -415,7 +416,6 @@ var Converters = {
             m.vien = parseFloat(d.wind.speed * 3.6).toFixed(1);
             m.vdir = d.wind.deg;
             m.rach = parseFloat(d.wind.gust * 3.6).toFixed(1);
-            const codigo = CODIGOS_OPENWEATHER[d.weather[0].id] || { descripcion: "desconocido", icono: "❓" };
             m.text = `<span title="${codigo.descripcion}">${codigo.icono}</span>`;
             r.push(m);
         }
